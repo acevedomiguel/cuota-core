@@ -1,0 +1,19 @@
+test/harness.ts
+  s_c1d9650f887c7a::t_ced9d72e0902b5 2,28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "f819d671e07a3fea9f15f0f6335386faa41f5db0",
+  "prompts": {},
+  "sessions": {
+    "s_c1d9650f887c7a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de8e87126ffeFZMsPRnTY6jteX",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
