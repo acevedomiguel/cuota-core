@@ -1,0 +1,16 @@
+package-lock.json
+  h_e179a2b614d4a3 3,9
+package.json
+  h_e179a2b614d4a3 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "2a7a64e87a196e1be2c40eda57a4f43f6ab508d5",
+  "prompts": {},
+  "humans": {
+    "h_e179a2b614d4a3": {
+      "author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
