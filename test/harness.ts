@@ -1,4 +1,5 @@
 import { afterAll } from "vitest";
+import pkg from "../package.json";
 import { fileAssets } from "../adapters/assets.js";
 import { createCuotaApp } from "../src/app.js";
 import type { AppConfig } from "../src/config.js";
@@ -24,7 +25,7 @@ export const testConfig: AppConfig = {
 	allowedEmails: ["mike@example.com", "richel@example.com"],
 	passkeys: { rpId: "localhost", origin: "http://localhost", rpName: "Cuota" },
 	invoiceReader: { apiKey: "test-deepseek-key" },
-	version: "0.1.0",
+	version: pkg.version,
 	about: { builtBy: "Example Maintainer", email: "maintainer@example.com", github: "https://github.com/example" },
 };
 
