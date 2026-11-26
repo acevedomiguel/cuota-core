@@ -1,6 +1,6 @@
 {
   "name": "cuota-core",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Runtime-neutral two-person shared expense app with income-proportional splits",
   "license": "MIT",
   "type": "module",

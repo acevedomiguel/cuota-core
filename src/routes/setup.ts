@@ -2,7 +2,8 @@ import { Hono } from "hono";
 import { hashPassword, passwordLongEnough } from "../auth.js";
 import type { AppEnv } from "../app-env.js";
 import { createUser } from "../db.js";
-import { claimSetup, readSetupInput, releaseSetup, userCount } from "../setup.js";
+import { claimSetupSlot, readSetupInput, releaseSetup, userCount, type ClaimOutcome } from "../setup.js";
+import type { SqlDatabase } from "../ports.js";
 import { renderView } from "../views.js";
 
 const MIN_PASSWORD_MESSAGE = "Password must be at least 12 characters.";
@@ -64,32 +65,41 @@ app.post("/setup", async (c) => {
 	if (input.email.length === 0) return renderError(EMAIL_MESSAGE, 400);
 	if (!passwordLongEnough(input.password)) return renderError(MIN_PASSWORD_MESSAGE, 400);
 
-	// One winner, decided by the database. The loser is told to sign in, which
-	// is true: the winner is creating the account right now.
-	const claimed = await claimSetup(db);
-	if (!claimed) {
-		if ((await userCount(db)) > 0) return c.redirect("/login", 303);
-		return renderError("Setup is already in progress. Try again in a moment.", 409);
-	}
+	// One winner, decided by the database. Where the engine can roll back, the
+	// claim and the account commit together; where it cannot, the claim carries
+	// its instant so a dead attempt can be taken over after the TTL.
+	const passwordHash = await hashPassword(input.password);
 
-	let userId: number;
+	const attempt = async (
+		tx: SqlDatabase,
+	): Promise<{ ok: true; id: number } | { ok: false; outcome: ClaimOutcome }> => {
+		const outcome = await claimSetupSlot(tx, await tx.now());
+		if (outcome === "in-progress") return { ok: false, outcome };
+		const id = await createUser(tx, { email: input.email, name: input.name, passwordHash });
+		return { ok: true, id };
+	};
+
+	let result: Awaited<ReturnType<typeof attempt>>;
 	try {
-		userId = await createUser(db, {
-			email: input.email,
-			name: input.name,
-			passwordHash: await hashPassword(input.password),
-		});
+		result = db.withTransaction ? await db.withTransaction(attempt) : await attempt(db);
 	} catch (error) {
-		// A transient failure must not leave the deployment unsettable: release
-		// the claim and let the operator try again.
-		await releaseSetup(db);
+		// A transient failure must not leave the deployment unsettable: drop the
+		// claim and let the operator try again.
+		await releaseSetup(db).catch(() => {});
 		if (String(error).includes("UNIQUE") || String(error).includes("duplicate key")) {
 			return renderError(TAKEN_MESSAGE, 400);
 		}
 		throw error;
 	}
 
-	console.info("first account created", { userId });
+	if (!result.ok) {
+		// Someone else is mid-submission. If their account landed in the
+		// meantime, sending this one to login is the truth.
+		if ((await userCount(db)) > 0) return c.redirect("/login", 303);
+		return renderError("Setup is already in progress. Try again in a moment.", 409);
+	}
+
+	console.info("first account created", { userId: result.id });
 	return c.redirect("/login", 303);
 });
 
