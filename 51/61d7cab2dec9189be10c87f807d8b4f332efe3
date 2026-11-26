@@ -1,0 +1,74 @@
+tsconfig.build.json
+  s_c1d9650f887c7a::t_1a02f03ed5db47 2-13
+test/session.test.ts
+  s_c1d9650f887c7a::t_bd4de46a52e38f 46-58
+src/ledger.ts
+  s_c1d9650f887c7a::t_48b0d89d1034bf 222,228-230
+adapters/sqlite.ts
+  s_c1d9650f887c7a::t_3b58200b1b9cee 61-72
+test/ledger.test.ts
+  s_c1d9650f887c7a::t_97f30b24b0376c 80-92
+test/about.test.ts
+  s_c1d9650f887c7a::t_511cb994c538b5 51-57
+src/session.ts
+  s_c1d9650f887c7a::t_8e504aa2bf88d5 4,101-104,120,123-133
+scripts/build-views.ts
+  s_c1d9650f887c7a::t_57ffefbb1c862b 21
+src/app.ts
+  s_c1d9650f887c7a::t_1dd6555f7afb1b 29-31
+  s_c1d9650f887c7a::t_22e36b02a5f6bd 39,58
+src/config.ts
+  s_c1d9650f887c7a::t_e11c62e4b0a674 28-32
+adapters/postgres.ts
+  s_c1d9650f887c7a::t_b161215b3132db 1,46-56,61,67,71,76,81,86-88,90-112,116-117,119-134,141-143,151-167
+  s_c1d9650f887c7a::t_1d9de1cf60bb88 89,113-115,118,170
+src/views/about.ejs
+  s_c1d9650f887c7a::t_25fcdf024f1549 21-26
+src/migrations.ts
+  s_c1d9650f887c7a::t_63c1caf475800c 22-29,34-38,58-62
+  s_58b6f55c0833f4::t_c17043dcff5047 63
+package.json
+  s_c1d9650f887c7a::t_ce2b90bed4a86d 3,10-11,14-15,18-43,48-49,70,75,80
+  s_c1d9650f887c7a::t_76567f44d9d4da 54-55,57-58
+test/migrations.test.ts
+  s_c1d9650f887c7a::t_b6b8b8720e4880 1-67
+test/harness.ts
+  s_c1d9650f887c7a::t_084ae99b19d8e1 29-34
+test/balance.test.ts
+  s_c1d9650f887c7a::t_5610cad5100ee0 10
+  s_c1d9650f887c7a::t_e37e12a05fa248 118-134
+src/ports.ts
+  s_c1d9650f887c7a::t_20d00428d8cba5 35-44
+README.md
+  s_c1d9650f887c7a::t_dc1e5d8fabd345 92-95,127,129-134,155-157,162-164
+package-lock.json
+  s_c1d9650f887c7a::t_5cf625817535dd 3,9,15,20
+server/main.ts
+  s_c1d9650f887c7a::t_0267442e7ee05d 35,40
+src/views-compiled.ts
+  s_c1d9650f887c7a::t_03b1a1b3e99ee1 48,132,211,329,372-379,444,628,782,874,1022,1174,1264,1402,1494,1614
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "5161d7cab2dec9189be10c87f807d8b4f332efe3",
+  "prompts": {},
+  "sessions": {
+    "s_58b6f55c0833f4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de8e37bb1ffeg7g6B9LpPtCNn5",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    },
+    "s_c1d9650f887c7a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de8e87126ffeFZMsPRnTY6jteX",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
