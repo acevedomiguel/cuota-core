@@ -67,6 +67,12 @@ describe("passkeyConfig", () => {
 });
 
 describe("passkey endpoints", () => {
+	beforeAll(async () => {
+		// A deployment with no accounts sends every page to /setup, so seed one
+		// before asserting the ordinary signed-out redirect.
+		await signUpAndLogIn(EMAIL);
+	});
+
 	it("passkey endpoints require auth where expected", async () => {
 		const res = await SELF.fetch("http://example.com/passkeys/register/options", {
 			method: "POST",

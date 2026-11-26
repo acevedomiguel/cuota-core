@@ -41,6 +41,12 @@ export interface AppConfig {
 	invoiceReader?: InvoiceReaderConfig | null;
 	/** Release version shown on the about page. */
 	version: string;
+	/**
+	 * When set, the first-run setup page also requires this token, so an
+	 * unclaimed public deployment cannot be taken over by the first stranger
+	 * who finds it. Omit it and setup is open only while the database is empty.
+	 */
+	setupToken?: string;
 	/** Contact details shown on the about page; omit both to hide the block. */
 	about?: AboutConfig;
 }

@@ -86,13 +86,23 @@ shell history or a process list. Pipe it in non-interactively:
 printf 'a-long-new-password' | npm run reset-password -- you@example.com
 ```
 
+## First run
+
+A fresh deployment has no accounts, so every page redirects to `/setup` until
+the first one exists. Fill in a name, email, and a password of at least 12
+characters. That account is created without an invitation and `/setup` then
+closes for good; everyone after it signs up through the invitation flow
+(`ALLOWED_EMAILS`).
+
+Set `SETUP_TOKEN` to require a token on that page as well, so an unclaimed
+public instance cannot be taken over by whoever finds it first.
+
 ## Status
 
 The application is extracted behind ports, PostgreSQL persistence is in place,
-and the Node server and Docker image run both database modes. The adapters and
-server helpers are exported, so a consumer can run the app without the repo.
-A first-run setup wizard is the next piece: today the first account still needs
-`ALLOWED_EMAILS`.
+the Node server and Docker image run both database modes, and a fresh instance
+can be set up entirely in the browser. The adapters and server helpers are
+exported, so a consumer can run the app without the repo.
 
 ## Requirements
 

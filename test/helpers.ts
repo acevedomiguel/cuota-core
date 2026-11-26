@@ -1,6 +1,7 @@
 import { env, SELF } from "./harness.js";
 import { testMigrations } from "./dialect.js";
 import { applyMigrations } from "../src/migrations.js";
+import { userCount } from "../src/setup.js";
 
 const ORIGIN = "http://example.com";
 
@@ -96,16 +97,21 @@ export async function postMultipart(path: string, form: FormData, session: FormS
 }
 
 /**
- * Signs up (allowlist permitting) and logs in, then re-reads the home page for
- * the CSRF token rotated by `establishAuthenticatedSession`. Idempotent: a
- * second call for the same email just signs in again.
+ * Signs up and logs in, then re-reads the home page for the CSRF token rotated
+ * by `establishAuthenticatedSession`. Idempotent: a second call for the same
+ * email just signs in again.
+ *
+ * On a fresh database the first account comes from `/setup`, because `/signup`
+ * is closed until someone exists. Later accounts use the normal invitation
+ * flow, which is what this helper exercises for every test after the first.
  */
 export async function signUpAndLogIn(
 	email: string,
 	password = "twelve-chars-ok",
 	name = "Test Person",
 ): Promise<FormSession> {
-	const signup = await postForm("/signup", { email, name, password });
+	const first = (await userCount(env.DB)) === 0;
+	const signup = await postForm(first ? "/setup" : "/signup", { email, name, password });
 	if (signup.status !== 303 && signup.status !== 400) {
 		throw new Error(`signup failed: ${signup.status}`);
 	}

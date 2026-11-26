@@ -76,6 +76,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -160,6 +161,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -239,6 +241,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -357,6 +360,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -472,6 +476,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -656,6 +661,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -810,6 +816,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -902,6 +909,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -1050,6 +1058,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -1202,6 +1211,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -1292,6 +1302,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -1430,6 +1441,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -1522,6 +1534,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -1572,6 +1585,102 @@ about = __locals.about,
     ; __append("\n")
     ; __append( include("_foot", { passkey: true, theme: true }) )
     ; __append("\n")
+  return __output;
+
+};
+
+const setup: TemplateFn = function anonymous(locals, escapeFn, include, rethrow
+) {
+escapeFn = escapeFn || function (markup) {
+  return markup == undefined
+    ? ''
+    : String(markup)
+      .replace(_MATCH_HTML, encode_char);
+};
+var _ENCODE_HTML_RULES = {
+      "&": "&amp;"
+    , "<": "&lt;"
+    , ">": "&gt;"
+    , '"': "&#34;"
+    , "'": "&#39;"
+    }
+  , _MATCH_HTML = /[&<>'"]/g;
+function encode_char(c) {
+  return _ENCODE_HTML_RULES[c] || c;
+};
+;
+  var __output = "";
+  function __append(s) { if (s !== undefined && s !== null) __output += s }
+  var __locals = (locals || {}),
+about = __locals.about,
+  active = __locals.active,
+  analytics = __locals.analytics,
+  authenticated = __locals.authenticated,
+  balance = __locals.balance,
+  balanceAmount = __locals.balanceAmount,
+  balanceLabel = __locals.balanceLabel,
+  bodyClass = __locals.bodyClass,
+  bothUsers = __locals.bothUsers,
+  categories = __locals.categories,
+  csrfToken = __locals.csrfToken,
+  dateLabel = __locals.dateLabel,
+  deployed = __locals.deployed,
+  descriptions = __locals.descriptions,
+  email = __locals.email,
+  empty = __locals.empty,
+  error = __locals.error,
+  errors = __locals.errors,
+  even = __locals.even,
+  expenses = __locals.expenses,
+  history = __locals.history,
+  incomes = __locals.incomes,
+  lowerIsA = __locals.lowerIsA,
+  maxMb = __locals.maxMb,
+  name = __locals.name,
+  names = __locals.names,
+  notice = __locals.notice,
+  opening = __locals.opening,
+  openingNote = __locals.openingNote,
+  openingSetup = __locals.openingSetup,
+  passkey = __locals.passkey,
+  passkeys = __locals.passkeys,
+  pct = __locals.pct,
+  preview = __locals.preview,
+  salaries = __locals.salaries,
+  ratio = __locals.ratio,
+  recent = __locals.recent,
+  setup = __locals.setup,
+  snapshotNote = __locals.snapshotNote,
+  stats = __locals.stats,
+  theme = __locals.theme,
+  title = __locals.title,
+  today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
+  user = __locals.user,
+  other = __locals.other,
+  values = __locals.values,
+  version = __locals.version,
+  viewer = __locals.viewer,
+  year = __locals.year;
+    ; __append( include("_head") )
+    ; __append("\n<main class=\"app login\">\n  <div class=\"brand\">\n    <div class=\"wordmark\">cuo<em>ta</em></div>\n    <p>First, the account that owns this instance.</p>\n  </div>\n\n  ")
+    ;  if (typeof error !== "undefined" && error) { 
+    ; __append("\n    <p class=\"notice error\" role=\"alert\">")
+    ; __append(escapeFn( error ))
+    ; __append("</p>\n  ")
+    ;  } 
+    ; __append("\n\n  <form action=\"/setup\" method=\"post\">\n    <input type=\"hidden\" name=\"_csrf\" value=\"")
+    ; __append(escapeFn( csrfToken ))
+    ; __append("\">\n    <div class=\"field\">\n      <label for=\"name\">Name</label>\n      <input id=\"name\" name=\"name\" type=\"text\" autocomplete=\"name\" placeholder=\"Your name\" value=\"")
+    ; __append(escapeFn( values && values.name ? values.name : "" ))
+    ; __append("\" required>\n    </div>\n    <div class=\"field\">\n      <label for=\"email\">Email</label>\n      <input id=\"email\" name=\"email\" type=\"email\" autocomplete=\"email\" placeholder=\"you@example.com\" value=\"")
+    ; __append(escapeFn( values && values.email ? values.email : "" ))
+    ; __append("\" required>\n    </div>\n    <div class=\"field\">\n      <label for=\"password\">Password</label>\n      <input id=\"password\" name=\"password\" type=\"password\" autocomplete=\"new-password\" placeholder=\"At least 12 characters\" minlength=\"12\" required>\n    </div>\n    ")
+    ;  if (tokenRequired) { 
+    ; __append("\n      <div class=\"field\">\n        <label for=\"token\">Setup token</label>\n        <input id=\"token\" name=\"token\" type=\"password\" autocomplete=\"off\" required>\n      </div>\n    ")
+    ;  } 
+    ; __append("\n    <button class=\"btn\" type=\"submit\">Create the first account</button>\n  </form>\n\n  <p class=\"hint\">This page disappears once an account exists. Everyone after you signs up with an invitation.</p>\n</main>\n")
+    ; __append( include("_foot") )
   return __output;
 
 };
@@ -1642,6 +1751,7 @@ about = __locals.about,
   theme = __locals.theme,
   title = __locals.title,
   today = __locals.today,
+  tokenRequired = __locals.tokenRequired,
   user = __locals.user,
   other = __locals.other,
   values = __locals.values,
@@ -1682,5 +1792,6 @@ export const templates: Record<string, TemplateFn> = {
 	"opening": opening,
 	"scan": scan,
 	"settings": settings,
+	"setup": setup,
 	"signup": signup,
 };
