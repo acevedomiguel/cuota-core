@@ -1,6 +1,6 @@
 import { env } from "./harness.js";
 import { beforeAll, describe, expect, it } from "vitest";
-import initSql from "../migrations/0001_init.sql?raw";
+import { initDb } from "./helpers.js";
 import {
 	createDbSession,
 	createUser,
@@ -17,7 +17,7 @@ const db = () => env.DB;
 
 beforeAll(async () => {
 	// miniflare D1 exec rejects multi-line statements; collapse newlines
-	await env.DB.exec(initSql.replace(/\n/g, " "));
+	await initDb();
 });
 
 describe("users", () => {

@@ -1,6 +1,6 @@
 import { env } from "./harness.js";
 import { beforeAll, describe, expect, it } from "vitest";
-import initSql from "../migrations/0001_init.sql?raw";
+import { initDb } from "./helpers.js";
 import { ensureCsrfToken, rotateCsrfToken, validCsrfToken } from "../src/auth.js";
 import {
 	CookieSession,
@@ -33,7 +33,7 @@ describe("signed session payload", () => {
 
 describe("session key", () => {
 	beforeAll(async () => {
-		await env.DB.exec(initSql.replace(/\n/g, " "));
+		await initDb();
 		await env.DB.prepare("DELETE FROM settings WHERE key = 'session_key'").run();
 	});
 

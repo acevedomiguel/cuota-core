@@ -1,6 +1,6 @@
 import { env, SELF } from "./harness.js";
 import { beforeAll, describe, expect, it } from "vitest";
-import initSql from "../migrations/0001_init.sql?raw";
+import { initDb } from "./helpers.js";
 
 /**
  * NOTE: the plan prescribed `import styles from "../public/styles.css?raw"`.
@@ -13,7 +13,7 @@ import initSql from "../migrations/0001_init.sql?raw";
 let styles = "";
 
 beforeAll(async () => {
-	await env.DB.exec(initSql.replace(/\n/g, " "));
+	await initDb();
 	const res = await SELF.fetch("http://example.com/static/styles.css");
 	expect(res.status).toBe(200);
 	styles = await res.text();

@@ -66,6 +66,29 @@ test/        unit and integration tests, plain Node, no network
 Adapters for a specific database or host belong here or in the consuming
 repository; the core never imports them.
 
+## Databases
+
+Two adapters ship here:
+
+- `adapters/sqlite.ts` — Node's built-in `node:sqlite`, in memory or a file.
+- `adapters/postgres.ts` — `node-postgres`, with optional schema isolation.
+
+Migrations are plain SQL: `migrations/` for SQLite, `migrations/postgres/` for
+PostgreSQL. `applyMigrations(db, migrations)` from the package records each
+version in `schema_migrations` and is safe to rerun; `adapters/migration-files.ts`
+reads a directory into the list it expects.
+
+The test suite runs against either database. PostgreSQL tests are skipped when
+`TEST_DATABASE_URL` is unset, so the default run needs nothing installed:
+
+```sh
+docker run -d --name cuota-pg \
+  -e POSTGRES_USER=cuota -e POSTGRES_PASSWORD=cuota -e POSTGRES_DB=cuota_test \
+  -p 55432:5432 postgres:17-alpine
+
+TEST_DATABASE_URL=postgres://cuota:cuota@localhost:55432/cuota_test npm test
+```
+
 ## Ports
 
 - `SqlDatabase` — `prepare()` with `bind/first/all/run`, `exec()` for

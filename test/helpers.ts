@@ -1,25 +1,15 @@
 import { env, SELF } from "./harness.js";
-import initSql from "../migrations/0001_init.sql?raw";
-import expensesSql from "../migrations/0002_expenses.sql?raw";
-import categoriesSql from "../migrations/0003_expense_categories.sql?raw";
+import { testMigrations } from "./dialect.js";
+import { applyMigrations } from "../src/migrations.js";
 
 const ORIGIN = "http://example.com";
 
 /**
- * Fresh miniflare instance per test file: apply the schema first. `exec`
- * rejects multi-line statements, so newlines collapse to spaces — which means
- * `--` line comments would swallow the rest of the statement, so they are
- * stripped first (they remain in the .sql file for humans and the migration
- * tool).
+ * Applies the schema for the running dialect. Safe to call more than once:
+ * the migration runner records what it has already applied.
  */
-function flatten(sql: string): string {
-	return sql.replace(/--[^\n]*/g, " ").replace(/\n/g, " ");
-}
-
 export async function initDb(): Promise<void> {
-	await env.DB.exec(flatten(initSql));
-	await env.DB.exec(flatten(expensesSql));
-	await env.DB.exec(flatten(categoriesSql));
+	await applyMigrations(env.DB, await testMigrations());
 }
 
 export interface FormSession {
