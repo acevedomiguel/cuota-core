@@ -1,0 +1,263 @@
+src/index.ts
+  s_c1d9650f887c7a::t_a6cfd464a8dcde 7-11,13-17
+test/helpers.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-11,14-127
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+  s_c1d9650f887c7a::t_fbab3df7ca57c0 12-13
+test/password.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-32
+scripts/build-views.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-8,10-96
+  s_c1d9650f887c7a::t_6690786c55e84f 9
+test/onboarding.test.ts
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-22
+adapters/assets.ts
+  s_c1d9650f887c7a::t_1dab9df8b30a00 1-45
+src/session.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-2,6-100,124,131-133
+  s_c1d9650f887c7a::t_8a7ab45c1822a4 3-4,101-109,111-122,125-130,134-159
+  s_c1d9650f887c7a::t_ee8edcb0c776da 5,110
+  s_c1d9650f887c7a::t_1cf5a0023a8245 123
+src/analytics.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-196
+src/time.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-16
+src/views/add.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-114
+src/views/home.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-80
+src/views/signup.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-31
+src/views.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-14
+test/analytics.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-299
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+test/responsive-layout.test.ts
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-141
+test/session-lifecycle.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-44
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+test/ports.test.ts
+  s_c1d9650f887c7a::t_ec9a6f463ff3f3 1-58
+src/routes/incomes.ts
+  s_c1d9650f887c7a::t_b06ba4e3003d70 13
+  s_c1d9650f887c7a::t_650692c9b2f0e0 11,61,97,106,112,117,124
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-10,12,14-60,62-96,98-105,107-111,113-116,118-123,125-129
+public/styles.css
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-982
+src/views/settings.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-96
+src/views/error.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-10
+public/passkeys.js
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-121
+test/ledger.test.ts
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-83
+test/session.test.ts
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+  s_c1d9650f887c7a::t_0008336f6be002 11
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-10,12-92
+tsconfig.json
+  s_c1d9650f887c7a::t_9b148a8a491a1d 2-17
+src/categories.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-47
+README.md
+  s_c1d9650f887c7a::t_a264a9e496d815 10-31,35-38,53-57,60-63,66-76,82
+src/routes/opening.ts
+  s_c1d9650f887c7a::t_3212066130e450 1,16
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-13,15,17-58,60-92,94-96,98-105,107-115,117-124,126-129,131-136,138-141
+  s_c1d9650f887c7a::t_650692c9b2f0e0 14,59,93,97,106,116,125,130,137
+src/views/opening.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-66
+test/settings.test.ts
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-234
+test/desktop.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1,3-80
+  s_c1d9650f887c7a::t_0008336f6be002 2
+test/harness.ts
+  s_c1d9650f887c7a::t_bc9648682c1720 1-18,20-30,38,69
+  s_c1d9650f887c7a::t_8333608b5d239d 19
+  s_c1d9650f887c7a::t_9a37bc8954efe8 31-37,39-68
+src/db.ts
+  s_c1d9650f887c7a::t_b2d72304829706 1-2,11,16,20-27,30,40-42,44-46,49,53,61,65-66,77,83,91,93
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 3-10,12-15,17-19,28-29,31-39,43,47-48,50-52,54-60,62-64,67-76,78-82,84-90,92
+public/theme.js
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-142
+test/theme-override.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-16,18-334
+  s_c1d9650f887c7a::t_b5a78d8babe405 17
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+src/calc.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-101
+src/views/incomes.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-73
+src/routes/scan.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-8,10-20,22-97,99-105,107-111
+  s_c1d9650f887c7a::t_54a9f253b08db4 21
+  s_c1d9650f887c7a::t_650692c9b2f0e0 9,98,106
+test/balance.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-116
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+src/app-env.ts
+  s_c1d9650f887c7a::t_28cbce4e7fdbc3 1-19
+src/views/_foot.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-8
+src/views/_head.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-24
+test/opening.test.ts
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-115
+test/types.d.ts
+  s_c1d9650f887c7a::t_2d419536325540 11
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-10
+src/views-compiled.ts
+  s_c1d9650f887c7a::t_69772a9ff18ae5 1-1664
+test/scan.test.ts
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-171
+src/home.ts
+  s_c1d9650f887c7a::t_9eb30e6b5c3787 9,65
+  s_c1d9650f887c7a::t_a9302429ae7327 3
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-2,4-8,10-64,66-145
+src/passkeys.ts
+  s_c1d9650f887c7a::t_47e7c566c94f90 62
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 3-61,63-88,90-97,99-110,112-120,122-207,211,215,217-220,222-223,225-226,228-231,233-235
+  s_c1d9650f887c7a::t_e7e814b4adb981 89,98,111,208-210,212-214,216,221,224,227,232
+  s_c1d9650f887c7a::t_5712e0da5d2990 121
+  s_c1d9650f887c7a::t_598d753c564321 1-2
+src/ledger.ts
+  s_c1d9650f887c7a::t_880c4a5d4ea132 7,52,56-58,61,63-66,70,82,93,97-99,102,104-107,111,123,140,145-147,150,152-155,164,189,196,206,211,223-225,228,230-234
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-6,8-51,53-55,59-60,62,67-69,71-81,83-92,94-96,100-101,103,108-110,112-122,124-139,141-144,148-149,151,156-163,165-188,190-195,197-205,207-210,212-222,226-227,229
+test/auth.test.ts
+  s_c1d9650f887c7a::t_0008336f6be002 1
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-10,12-189
+  s_c1d9650f887c7a::t_7f1d937bf2b0a3 11
+test/expenses.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-135
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+test/home.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-35,46,49-138
+  s_c1d9650f887c7a::t_d1706aff4748f7 36-45,47-48
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+test/incomes.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-174
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+src/views/scan.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-74
+src/auth.ts
+  s_c1d9650f887c7a::t_2a543f3052c1b3 2-6,88-91,102,116,125,133,158
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1,7-87,92-101,103-115,117-124,126-132,134-157
+src/views/analytics.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-110
+adapters/sqlite.ts
+  s_c1d9650f887c7a::t_2772e020d65a94 1-66
+src/routes/auth.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1,3-45,47,49-51,53-64,66-78,80-85,87-91
+  s_c1d9650f887c7a::t_650692c9b2f0e0 2,46,48,52,65,79,86
+src/invoice.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-104
+test/deepseek.test.ts
+  s_c1d9650f887c7a::t_0008336f6be002 55,62,74,78,83
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-54,56-61,63-73,75-77,79-82,84-85
+test/calc.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-86
+public/webauthn/index.js
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1
+test/invoice.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-73
+test/app.test.ts
+  s_c1d9650f887c7a::t_c518afcfe4abd7 6
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-5,7-24
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+test/db.test.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-73
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+test/scaffold.test.ts
+  s_c1d9650f887c7a::t_f2c0272c4a57d6 51,54-57
+migrations/0003_expense_categories.sql
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-10
+test/about.test.ts
+  s_c1d9650f887c7a::t_140beae0267ad3 54
+  s_c1d9650f887c7a::t_825b8eaad41afc 44-53
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-43,55-104
+package.json
+  s_c1d9650f887c7a::t_4baaf911f0cb44 24-25,27,30-33,37
+  s_c1d9650f887c7a::t_0008336f6be002 35,41
+src/routes/passkeys.ts
+  s_c1d9650f887c7a::t_650692c9b2f0e0 9,36,48,75,90-91,113,133,137,156,163
+  s_c1d9650f887c7a::t_5813b5dd400e17 30,40
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-8,10-29,31-35,37-39,41-47,49-74,76-89,92-112,114-132,134-136,138-155,157-162,164-171
+src/views/_nav.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-55
+src/views/about.ejs
+  s_c1d9650f887c7a::t_1c3fcc9beba02b 20-24,26-27,30,32-33,36,38,45
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-19,25,28-29,31,34-35,37,39-44
+src/views/login.ejs
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-33
+migrations/0001_init.sql
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-35
+src/app.ts
+  s_c1d9650f887c7a::t_7c9218abe43498 1-137
+test/dark-mode.test.ts
+  s_c1d9650f887c7a::t_21d755649bc1fd 1
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 2-6,8-159
+  s_c1d9650f887c7a::t_7dba9db00f4e4d 7
+src/routes/settings.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-2,4-23,25-53,55-62,64-83,85-90
+  s_c1d9650f887c7a::t_650692c9b2f0e0 3,24,54,63,84
+migrations/0002_expenses.sql
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-39
+src/balance.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-12,14-43,46-52,54-62,78-83,86-92
+  s_c1d9650f887c7a::t_01f84f99088103 53,84
+  s_c1d9650f887c7a::t_4018fda9491e3c 63-77,85
+  s_c1d9650f887c7a::t_61fb2b69f067d8 13,44-45
+src/routes/expenses.ts
+  s_c1d9650f887c7a::t_650692c9b2f0e0 9,70,89,150,159,174
+  s_c1d9650f887c7a::t_35457af6e5786e 11
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-8,10,12-69,71-88,90-149,151-158,160-173,175-178
+test/passkeys.test.ts
+  s_c1d9650f887c7a::t_2487c5a56c7353 1-2,13-19,40-44,49,54-56,61,64-65,89-90
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 3-12,20-39,45-48,50-53,57-60,62-63,66-88,91-112,114-219
+  s_c1d9650f887c7a::t_60a46fc5c8c218 113
+src/ports.ts
+  s_c1d9650f887c7a::t_6fa24eaa670939 1-29,33-48
+  s_c1d9650f887c7a::t_309a8f12a17090 30-32
+src/routes/analytics.ts
+  s_c1d9650f887c7a::t_650692c9b2f0e0 10,37,82
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-9,11,13-36,38-81,83-86
+  s_c1d9650f887c7a::t_cc9fc9424a675b 12
+src/routes/about.ts
+  s_c1d9650f887c7a::t_281c0c06b77686 3,9-10,15,23-24
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1,4-8,11-14,16-22,25-29
+  s_c1d9650f887c7a::t_650692c9b2f0e0 2
+src/config.ts
+  s_c1d9650f887c7a::t_bba4d0941fd687 1-41
+src/deepseek.ts
+  s_c1d9650f887c7a::t_9ef3f84d0961ae 1-5,7-29,32-88,90-92,94-103,105-118
+  s_c1d9650f887c7a::t_94713f0168d661 6,30-31,89,93,104
+package-lock.json
+  s_c1d9650f887c7a::t_35d6a334895448 11-14,16,18,60-65,73-78,111-343,643-663,700-706,837-850,861-884,912-927,973-982,998-1024,1308-1320,1410-1433,1548-1566
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "208c09ab4447f0f437e48ffef3720e9bf435b8cc",
+  "prompts": {},
+  "sessions": {
+    "s_c1d9650f887c7a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de8e87126ffeFZMsPRnTY6jteX",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
