@@ -1,0 +1,19 @@
+package.json
+  s_c1d9650f887c7a::t_bde089947a8be5 54,81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "af2b14c5544375944dde4dcc77a3d21330a3e897",
+  "prompts": {},
+  "sessions": {
+    "s_c1d9650f887c7a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de8e87126ffeFZMsPRnTY6jteX",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
