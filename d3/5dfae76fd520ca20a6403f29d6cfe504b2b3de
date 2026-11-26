@@ -1,0 +1,50 @@
+src/routes/setup.ts
+  s_c1d9650f887c7a::t_e5af56ac887621 43
+  s_c1d9650f887c7a::t_d2d4fff8e610d0 1-42,44-96
+test/helpers.ts
+  s_c1d9650f887c7a::t_bcab5b385c039c 4,100-106,113-114
+test/passkeys.test.ts
+  s_c1d9650f887c7a::t_cbeba41c841979 70-75
+src/config.ts
+  s_c1d9650f887c7a::t_b93eb00759e885 44-49
+src/app.ts
+  s_c1d9650f887c7a::t_b281ea4b04f991 76-77,84-90
+  s_c1d9650f887c7a::t_18c1d700ffa7c7 5,20,69,91,152
+server/env.ts
+  s_c1d9650f887c7a::t_7b63d165f19fab 55
+src/setup.ts
+  s_c1d9650f887c7a::t_9283713f967a88 1-55
+src/views/setup.ejs
+  s_c1d9650f887c7a::t_70dc85f4409546 1-37
+test/setup.test.ts
+  s_c1d9650f887c7a::t_0084acd4920135 67-71,77-81,126-129
+  s_c1d9650f887c7a::t_d8fe7eb1adcdab 1-66,72-76,82-125,130-194
+.env.example
+  s_c1d9650f887c7a::t_4276ddffdd7ca3 15,18-21
+README.md
+  s_c1d9650f887c7a::t_8a9ec86c5a080b 89-99,103-105
+package-lock.json
+  s_c1d9650f887c7a::t_dc40ba874ddc30 3,9
+package.json
+  s_c1d9650f887c7a::t_f3918865d53fa7 3,80
+scripts/build-views.ts
+  s_c1d9650f887c7a::t_549f4193b679f6 52
+src/views-compiled.ts
+  s_c1d9650f887c7a::t_ac9b2f5e60a8de 79,164,244,363,479,664,819,912,1061,1214,1305,1444,1537,1592-1687,1754,1795
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "d35dfae76fd520ca20a6403f29d6cfe504b2b3de",
+  "prompts": {},
+  "sessions": {
+    "s_c1d9650f887c7a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de8e87126ffeFZMsPRnTY6jteX",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
