@@ -55,6 +55,17 @@ function resetCookie() {
 	cookie = "";
 }
 
+/**
+ * The first account's id, read from the salary form. Hardcoding `1` breaks on
+ * any database that has already issued ids.
+ */
+async function firstUserId() {
+	const { html } = await page("/incomes");
+	const id = html.match(/name="userId"\s+value="(\d+)"/)?.[1];
+	if (!id) throw new Error("no user id on the salary form");
+	return id;
+}
+
 async function main() {
 	const health = await request("/healthz");
 	check("/healthz answers 200", health.status === 200, `got ${health.status}`);
@@ -85,7 +96,7 @@ async function main() {
 
 	res = await request("/incomes", {
 		method: "POST",
-		body: new URLSearchParams({ _csrf: csrf, userId: "1", amount: "5000" }),
+		body: new URLSearchParams({ _csrf: csrf, userId: await firstUserId(), amount: "5000" }),
 	});
 	check("POST /incomes records a salary", res.status === 303, `got ${res.status}`);
 
