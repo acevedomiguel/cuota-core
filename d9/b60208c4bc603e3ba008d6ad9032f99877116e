@@ -1,0 +1,20 @@
+scripts/smoke.mjs
+  s_c1d9650f887c7a::t_f6bd9be997a2c3 64
+  s_c1d9650f887c7a::t_f97e9fc4d8379e 58-63,65-68,99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "d9b60208c4bc603e3ba008d6ad9032f99877116e",
+  "prompts": {},
+  "sessions": {
+    "s_c1d9650f887c7a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de8e87126ffeFZMsPRnTY6jteX",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
