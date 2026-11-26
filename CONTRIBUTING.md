@@ -22,6 +22,10 @@ example `fix: keep the leftover cent on the lower id`.
 ## Tests
 
 - Tests run in plain Node and must not need the network.
+- The default run uses SQLite in memory. Set `TEST_DATABASE_URL` to run the
+  same suite against PostgreSQL; that path needs a reachable server and is what
+  CI's PostgreSQL job does.
+- A new database adapter must pass `test/contract/sql-database.contract.ts`.
 - Never commit real financial data, real email addresses, credentials, or
   deployment identifiers. Fixtures use names such as `example.com` and round
   amounts.

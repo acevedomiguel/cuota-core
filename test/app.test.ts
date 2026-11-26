@@ -1,11 +1,11 @@
 import { env, SELF } from "./harness.js";
 import { beforeAll, describe, expect, it } from "vitest";
-import initSql from "../migrations/0001_init.sql?raw";
+import { initDb } from "./helpers.js";
 
 beforeAll(async () => {
 	// The session middleware reads/writes the settings table, so the schema
 	// must exist before any request is served.
-	await env.DB.exec(initSql.replace(/\n/g, " "));
+	await initDb();
 });
 
 describe("app shell", () => {

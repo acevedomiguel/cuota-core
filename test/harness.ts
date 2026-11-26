@@ -1,15 +1,24 @@
+import { afterAll } from "vitest";
 import { fileAssets } from "../adapters/assets.js";
-import { openSqliteDatabase } from "../adapters/sqlite.js";
 import { createCuotaApp } from "../src/app.js";
 import type { AppConfig } from "../src/config.js";
+import { openTestDatabase, usingPostgres } from "./dialect.js";
 
 /**
- * The test host: an in-memory SQLite database, the repository's own static
- * files, and a fixed config. Each test file gets a fresh module graph, so each
- * one starts with an empty database.
+ * The test host: an empty database (SQLite in memory, or PostgreSQL when
+ * `TEST_DATABASE_URL` is set), the repository's own static files, and a fixed
+ * config. Each test file gets a fresh module graph, so each one starts with an
+ * empty database.
  */
 
-export const database = openSqliteDatabase();
+const test = await openTestDatabase();
+
+export const database = test.db;
+export const dialect = usingPostgres ? "postgres" : "sqlite";
+
+afterAll(async () => {
+	await test.close();
+});
 
 export const testConfig: AppConfig = {
 	allowedEmails: ["mike@example.com", "richel@example.com"],
