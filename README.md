@@ -94,8 +94,10 @@ characters. That account is created without an invitation and `/setup` then
 closes for good; everyone after it signs up through the invitation flow
 (`ALLOWED_EMAILS`).
 
-Set `SETUP_TOKEN` to require a token on that page as well, so an unclaimed
-public instance cannot be taken over by whoever finds it first.
+Anyone who can reach an **empty** deployment can create the first account: that
+is the feature, and it is also the risk. Set `SETUP_TOKEN` on anything that is
+exposed to the internet, including any staging instance, so the page also
+requires a token. Leave it unset only for a container on a private network.
 
 ## Status
 
@@ -131,6 +133,13 @@ server/      container entry, environment loading, password recovery
 migrations/  SQLite schema; migrations/postgres/ mirrors it
 test/        unit and integration tests, plain Node, no network
 ```
+
+## Vendoring and release policy
+
+The subtree tracks the public repository's `main`, which is what `npm run
+update:core` pulls. Releases are tagged (`v1.2.0`, `v1.2.1`, …) so any pulled
+state can be named; when the vendored `vendor/cuota-core/package.json` version
+matters to a reader, check it rather than assuming the tag.
 
 ## Databases
 

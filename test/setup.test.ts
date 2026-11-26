@@ -130,6 +130,59 @@ describe("first run", () => {
 		expect(await userCount()).toBe(1);
 	});
 
+	it("takes over a claim left behind by an attempt that died", async () => {
+		// The claim is written before the account. If the process dies in
+		// between — an evicted Worker, a dropped connection — the row is still
+		// there with no account beside it. Without a takeover, the deployment
+		// could never be set up at all.
+		const stale = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+		await env.DB.prepare("INSERT INTO settings (key, value) VALUES ('setup_claim', ?)").bind(stale).run();
+
+		const res = await postForm("/setup", {
+			name: "Owner",
+			email: NOT_ALLOWED,
+			password: "twelve-chars-ok",
+		});
+
+		expect(res.status).toBe(303);
+		expect(res.headers.get("location")).toBe("/login");
+		expect(await userCount()).toBe(1);
+	});
+
+	it("refuses while another submission is genuinely in flight", async () => {
+		const fresh = new Date().toISOString();
+		await env.DB.prepare("INSERT INTO settings (key, value) VALUES ('setup_claim', ?)").bind(fresh).run();
+
+		const res = await postForm("/setup", {
+			name: "Second",
+			email: "second@example.com",
+			password: "twelve-chars-ok",
+		});
+
+		expect(res.status).toBe(409);
+		expect(await userCount()).toBe(0);
+	});
+
+	it("sends a stale claim to login once accounts exist", async () => {
+		// One session, so the second attempt carries a valid CSRF token even
+		// though the page is already closed.
+		const session = await startSession("/setup");
+		await postForm("/setup", { name: "Owner", email: NOT_ALLOWED, password: "twelve-chars-ok" }, session);
+
+		const stale = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+		await env.DB.prepare("UPDATE settings SET value = ? WHERE key = 'setup_claim'").bind(stale).run();
+
+		const res = await postForm(
+			"/setup",
+			{ name: "Intruder", email: "intruder@example.com", password: "twelve-chars-ok" },
+			session,
+		);
+
+		expect(res.status).toBe(303);
+		expect(res.headers.get("location")).toBe("/login");
+		expect(await userCount()).toBe(1);
+	});
+
 	it("still requires an invitation for the second account", async () => {
 		await postForm("/setup", { name: "Owner", email: NOT_ALLOWED, password: "twelve-chars-ok" });
 
