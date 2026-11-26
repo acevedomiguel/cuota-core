@@ -1,0 +1,73 @@
+<%- include("_head") %>
+<main class="app form-page">
+
+  <header class="topbar">
+    <div class="wordmark">your <em>salaries</em></div>
+    <div class="period"><span data-pct-a><%= pct[0] %></span>/<span data-pct-b><%= pct[1] %></span></div>
+  </header>
+
+  <section class="card" aria-labelledby="current-title">
+    <h2 id="current-title">Split right now</h2>
+    <div class="preview" aria-label="Current income ratio">
+      <div class="side">
+        <span class="name llama"><%= salaries[0] ? salaries[0].name : "" %></span>
+        <span class="val"><%= salaries[0] ? salaries[0].amount : "0" %></span>
+      </div>
+      <div class="side">
+        <span class="name mono"><%= salaries[1] ? salaries[1].name : "" %></span>
+        <span class="val"><%= salaries[1] ? salaries[1].amount : "0" %></span>
+      </div>
+    </div>
+  </section>
+
+  <form action="/incomes" method="post" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="field">
+      <label for="amount">Monthly salary</label>
+      <input class="amount-input" id="amount" name="amount" type="text" inputmode="decimal"
+             placeholder="0.00" value="<%= values.amount %>" autofocus autocomplete="off">
+      <% if (errors.amount) { %><p class="notice error" role="alert"><%= errors.amount %></p><% } %>
+    </div>
+
+    <div class="field">
+      <label id="user-label">Whose salary</label>
+      <div class="payer" role="radiogroup" aria-labelledby="user-label">
+        <% bothUsers.forEach(function (u, i) { %>
+          <label class="<%= i === 0 ? "llama" : "mono" %>">
+            <input type="radio" name="userId" value="<%= u.id %>"
+                   <%= String(values.userId) === String(u.id) ? "checked" : "" %>>
+            <i class="dot <%= i === 0 ? "llama" : "mono" %>" aria-hidden="true"></i><%= u.name %>
+          </label>
+        <% }); %>
+      </div>
+      <% if (errors.userId) { %><p class="notice error" role="alert"><%= errors.userId %></p><% } %>
+    </div>
+
+    <button class="btn" type="submit">Save salary</button>
+    <p class="hint">The new salary applies to expenses added from now on. Past records keep their split.</p>
+  </form>
+
+  <% incomes.forEach(function (group) { %>
+    <section class="card" aria-label="<%= group.name %>'s salary history">
+      <h2><i class="dot <%= group.tone %>" aria-hidden="true"></i><%= group.name %></h2>
+      <% if (group.entries.length === 0) { %>
+        <p class="hint">No salary recorded yet.</p>
+      <% } else { %>
+        <ul class="history">
+          <% group.entries.forEach(function (entry, i) { %>
+            <li>
+              <span class="when"><%= entry.when %></span>
+              <span class="amt"><%= entry.amount %></span>
+              <% if (i === 0) { %><span class="pill-tag">current</span><% } %>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </section>
+  <% }); %>
+
+</main>
+
+<%- include("_nav", { active: active }) %>
+<%- include("_foot", { theme: true }) %>

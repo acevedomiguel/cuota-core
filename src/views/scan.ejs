@@ -1,0 +1,74 @@
+<%- include("_head") %>
+<main class="app">
+
+  <header class="topbar">
+    <div class="wordmark">scan <em>invoice</em></div>
+    <div class="period">DeepSeek</div>
+  </header>
+
+  <% if (error) { %>
+    <p class="notice error" role="alert"><%= error %></p>
+  <% } %>
+
+  <form action="/scan" method="post" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="form-grid">
+      <div class="form-fields">
+        <div class="field">
+          <label for="photo">Invoice or receipt photo</label>
+          <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/gif,image/webp" capture="environment" required>
+          <p class="hint">Lay the invoice flat and fill the frame. JPEG, PNG, GIF or WebP, up to <%= maxMb %> MB.</p>
+        </div>
+      </div>
+
+      <div class="form-aside">
+        <button class="btn" type="submit">Read the photo</button>
+        <p class="hint">The amount is read from the picture and pre-filled for you to check. Nothing is saved until you confirm.</p>
+        <p class="hint">The photo is sent to DeepSeek to be read.</p>
+      </div>
+    </div>
+  </form>
+
+  <p class="hint">Prefer to type it in? <a href="/add">Add an expense by hand</a>.</p>
+
+</main>
+
+<%- include("_nav", { active: active }) %>
+<script type="module">
+  /* Best-effort: shrink a large photo in the browser so mobile uploads are
+     quick. Strictly an enhancement — if anything here fails, the original file
+     is submitted unchanged and the server still validates it. */
+  const input = document.querySelector("#photo");
+  if (input && typeof createImageBitmap === "function" && typeof DataTransfer === "function") {
+    const MAX_EDGE = 1600;
+    const shrink = async (file) => {
+      if (!file || !file.type.startsWith("image/")) return file;
+      const bitmap = await createImageBitmap(file);
+      const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+      if (scale >= 1 && file.size <= 3_000_000) return file;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(bitmap.width * scale);
+      canvas.height = Math.round(bitmap.height * scale);
+      canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
+      if (!blob || blob.size >= file.size) return file;
+      return new File([blob], "invoice.jpg", { type: "image/jpeg" });
+    };
+    input.addEventListener("change", async () => {
+      const original = input.files && input.files[0];
+      if (!original) return;
+      try {
+        const smaller = await shrink(original);
+        if (smaller !== original) {
+          const transfer = new DataTransfer();
+          transfer.items.add(smaller);
+          input.files = transfer.files;
+        }
+      } catch (error) {
+        /* keep the original file */
+      }
+    });
+  }
+</script>
+<%- include("_foot", { theme: true }) %>

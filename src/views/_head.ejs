@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<script>
+/* Applies a stored appearance choice before the first paint, so the page never
+   flashes the wrong theme. Only an explicit "light"/"dark" override is stored;
+   System leaves the meta untouched and keeps following the device preference.
+   If storage is unavailable the default behavior is kept and nothing is thrown. */
+try {
+  var stored = localStorage.getItem("cuota-color-scheme");
+  if (stored === "light" || stored === "dark") {
+    document.querySelector('meta[name="color-scheme"]').setAttribute("content", stored);
+  }
+} catch (error) {
+  /* storage blocked: keep following the system preference */
+}
+</script>
+<title><%= title %> · cuota</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>

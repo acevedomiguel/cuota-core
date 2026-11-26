@@ -1,0 +1,45 @@
+<%- include("_head") %>
+<main class="app form-page">
+
+  <header class="topbar">
+    <div class="wordmark">about <em>cuota</em></div>
+    <form action="/logout" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn secondary" type="submit">Sign out</button>
+    </form>
+  </header>
+
+  <section class="card about-card" aria-labelledby="about-title">
+    <h1 id="about-title" class="section-title">Cuota means &ldquo;your share.&rdquo;</h1>
+    <p>A private, two-person expense tracker that splits shared costs in proportion to each person&rsquo;s income.</p>
+
+    <dl class="about-meta">
+      <div>
+        <dt>Version</dt>
+        <dd><%= version %></dd>
+      </div>
+      <% if (about.builtBy) { %>
+      <div>
+        <dt>Built by</dt>
+        <dd><%= about.builtBy %></dd>
+      </div>
+      <% } %>
+      <% if (about.email) { %>
+      <div>
+        <dt>Email</dt>
+        <dd><a href="mailto:<%= about.email %>"><%= about.email %></a></dd>
+      </div>
+      <% } %>
+      <% if (about.github) { %>
+      <div>
+        <dt>GitHub</dt>
+        <dd><a href="<%= about.github %>" rel="noopener"><%= about.github %></a></dd>
+      </div>
+      <% } %>
+    </dl>
+  </section>
+
+</main>
+
+<%- include("_nav", { active: "about" }) %>
+<%- include("_foot", { theme: true }) %>

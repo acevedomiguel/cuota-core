@@ -1,0 +1,982 @@
+/* Cuota — preliminary UI mockups
+   Direction: Apple-style, rounded, lively colors, mobile-first. */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #f5f5f7;
+  --card: #ffffff;
+  --ink: #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #6e6e73;         /* muted hint — kept at 4.5:1 on light surfaces */
+
+  --accent: #5e5ce6;        /* indigo — primary actions */
+  --accent-ink: #ffffff;
+  /* Accent used as *text* must clear 4.5:1 on the 12% accent tint, which the
+     raw hue does not; the border and tint keep the original --accent. */
+  --accent-text: #4f4cd0;
+
+  --llama: #ff6482;         /* coral — person A */
+  --mono: #30b0c7;          /* teal — person B */
+  /* Text-only variants of the brand hues: the bars, dots and 15% selected
+     tints keep the original --llama/--mono; only the text uses these. */
+  --llama-ink: #bd2850;
+  --mono-ink: #0b6f7a;
+
+  --positive: #30d158;
+  --negative: #ff453a;
+
+  /* Percent alpha here is identical to the original 0.85/0.14 alphas; the
+     percent form keeps the raw component literals out of the stylesheet. */
+  --pill-bg: rgb(255 255 255 / 85%);
+  --border-subtle: rgb(0 0 0 / 0.05);
+  --border-sidebar: rgb(0 0 0 / 0.06);
+  --border-strong: rgb(0 0 0 / 0.08);
+  --state-selected: rgb(0 0 0 / 0.05);
+  --state-hover: rgb(0 0 0 / 0.04);
+  --state-hover-subtle: rgb(0 0 0 / 0.03);
+  --tint-base: #ffffff;
+  /* Ink used inside tinted surfaces (notices, danger): dark scheme mixes the
+     brand hue toward this so tinted text keeps contrast on a dark base. */
+  --tint-ink: #000000;
+  --accent-glow: rgb(94 92 230 / 14%);
+
+  --radius-l: 28px;
+  --radius-m: 20px;
+  --radius-s: 14px;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.06);
+
+  --target-size: 24px;
+}
+
+/* Raw dark values, declared once. The two dark states below alias them, so the
+   automatic and explicit palettes cannot drift apart. */
+:root {
+  --dark-bg: #000000;
+  --dark-card: #1c1c1e;
+  --dark-ink: #f5f5f7;
+  --dark-ink-2: #a1a1a6;
+  --dark-ink-3: #86868b;
+  --dark-accent: #9b98ff;
+  --dark-accent-ink: #1d1d1f;
+  --dark-llama: #ff7d92;
+  --dark-mono: #50c5d8;
+  --dark-shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 8px 24px rgb(0 0 0 / 0.28);
+  --dark-pill-bg: rgb(28 28 30 / 0.88);
+  --dark-border-subtle: rgb(255 255 255 / 0.10);
+  --dark-border-sidebar: rgb(255 255 255 / 0.12);
+  --dark-border-strong: rgb(255 255 255 / 0.16);
+  --dark-state-selected: rgb(255 255 255 / 0.12);
+  --dark-state-hover: rgb(255 255 255 / 0.10);
+  --dark-tint-base: #1c1c1e;
+  --dark-tint-ink: #ffffff;
+  --dark-accent-glow: rgb(155 152 255 / 0.18);
+}
+
+/* System (the untouched `light dark` meta): follow the device preference.
+   Scoped to that exact meta value so an explicit override is never undone by
+   the OS preference. Only colors and effects change. */
+@media (prefers-color-scheme: dark) {
+  :root:has(> head > meta[name="color-scheme"][content="light dark"]) {
+    --bg: var(--dark-bg);
+    --card: var(--dark-card);
+    --ink: var(--dark-ink);
+    --ink-2: var(--dark-ink-2);
+    --ink-3: var(--dark-ink-3);
+    --accent: var(--dark-accent);
+    --accent-ink: var(--dark-accent-ink);
+    --accent-text: var(--dark-accent);
+    --llama: var(--dark-llama);
+    --mono: var(--dark-mono);
+    --llama-ink: var(--dark-llama);
+    --mono-ink: var(--dark-mono);
+    --shadow-card: var(--dark-shadow-card);
+    --pill-bg: var(--dark-pill-bg);
+    --border-subtle: var(--dark-border-subtle);
+    --border-sidebar: var(--dark-border-sidebar);
+    --border-strong: var(--dark-border-strong);
+    --state-selected: var(--dark-state-selected);
+    --state-hover: var(--dark-state-hover);
+    --state-hover-subtle: var(--dark-state-hover);
+    --tint-base: var(--dark-tint-base);
+    --tint-ink: var(--dark-tint-ink);
+    --accent-glow: var(--dark-accent-glow);
+  }
+}
+
+/* Explicit dark override: the same palette, applied regardless of the device. */
+:root:has(> head > meta[name="color-scheme"][content="dark"]) {
+  color-scheme: dark;
+  --bg: var(--dark-bg);
+  --card: var(--dark-card);
+  --ink: var(--dark-ink);
+  --ink-2: var(--dark-ink-2);
+  --ink-3: var(--dark-ink-3);
+  --accent: var(--dark-accent);
+  --accent-ink: var(--dark-accent-ink);
+  --accent-text: var(--dark-accent);
+  --llama: var(--dark-llama);
+  --mono: var(--dark-mono);
+  --llama-ink: var(--dark-llama);
+  --mono-ink: var(--dark-mono);
+  --shadow-card: var(--dark-shadow-card);
+  --pill-bg: var(--dark-pill-bg);
+  --border-subtle: var(--dark-border-subtle);
+  --border-sidebar: var(--dark-border-sidebar);
+  --border-strong: var(--dark-border-strong);
+  --state-selected: var(--dark-state-selected);
+  --state-hover: var(--dark-state-hover);
+  --state-hover-subtle: var(--dark-state-hover);
+  --tint-base: var(--dark-tint-base);
+  --tint-ink: var(--dark-tint-ink);
+  --accent-glow: var(--dark-accent-glow);
+}
+
+/* Explicit light override: the base palette, regardless of the device. It
+   redefines no colors, so nothing from the dark states can leak in. */
+:root:has(> head > meta[name="color-scheme"][content="light"]) {
+  color-scheme: light;
+}
+
+@media (pointer: coarse) {
+  :root { --target-size: 44px; }
+}
+
+* { box-sizing: border-box; }
+
+html {
+  /* keep focused fields clear of the fixed bottom bar */
+  scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p, li { text-wrap: pretty; margin: 0; }
+
+/* Phone-width app column; full-bleed on real phones */
+.app {
+  max-inline-size: 26rem;
+  margin-inline: auto;
+  min-block-size: 100dvh;
+  padding: max(1.25rem, env(safe-area-inset-top, 0px)) 1.25rem calc(6.5rem + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  container: app / inline-size;
+}
+
+/* ---------- header ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 0.25rem;
+}
+
+.wordmark {
+  font-size: clamp(2.25rem, 1.8rem + 2.25vw, 2.625rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.wordmark em { font-style: normal; color: var(--accent); }
+
+.period {
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+/* ---------- cards ---------- */
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem;
+}
+
+/* ---------- balance hero ---------- */
+
+.balance {
+  display: grid;
+  gap: 0.75rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.balance::before {
+  content: "";
+  position: absolute;
+  inset: auto -30% -60% 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-glow), transparent 65%);
+  pointer-events: none;
+}
+
+.balance .label {
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.balance .amount {
+  font-size: clamp(2.25rem, 1.6rem + 3vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.balance .who { font-weight: 600; }
+.balance .who.llama { color: var(--llama-ink); }
+.balance .who.mono { color: var(--mono-ink); }
+
+/* income split bar */
+.split {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.split .bar {
+  display: flex;
+  block-size: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.split .bar i { display: block; }
+.split .bar .a { background: var(--llama); }
+.split .bar .b { background: var(--mono); }
+
+.split .legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- expense list ---------- */
+
+.section-title {
+  font-size: 1.0625rem;
+  font-weight: 650;
+  padding-inline: 0.25rem;
+}
+
+.expenses {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+  display: grid;
+}
+
+.expenses li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-s);
+  min-inline-size: 0;
+}
+
+.expenses li + li { border-block-start: 1px solid var(--border-subtle); }
+
+.dot {
+  flex: none;
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 50%;
+}
+.dot.llama { background: var(--llama); }
+.dot.mono { background: var(--mono); }
+
+.expenses .what { flex: 1; min-inline-size: 0; }
+.expenses .what .desc { font-weight: 550; }
+.expenses .what .when { font-size: 0.8125rem; color: var(--ink-2); }
+
+.expenses .amt {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+.expenses .amt .paid { font-weight: 600; }
+.expenses .amt .share { font-size: 0.8125rem; color: var(--ink-2); }
+
+/* ---------- bottom bar + add button ---------- */
+
+.bottombar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 1rem max(0.75rem, env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+
+.bottombar .pill {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--pill-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 999px;
+  box-shadow: var(--shadow-card);
+  padding: 0.375rem;
+}
+
+.bottombar a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-block-size: var(--target-size);
+  min-inline-size: var(--target-size);
+  padding: 0.625rem 1rem;
+  border-radius: 999px;
+  color: var(--ink-2);
+  text-decoration: none;
+  font-weight: 550;
+  font-size: 0.9375rem;
+}
+
+.bottombar a.active { color: var(--ink); background: var(--state-selected); }
+
+.bottombar .fab {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 1.25rem;
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  padding: 0;
+  font-weight: 400;
+}
+
+/* Narrow screens: keep every destination, the fab, and the 44px coarse-pointer
+   target, but tighten the pill. Seven destinations fit one row down to about
+   375px; below that the pill switches to a two-row grid (see the 23rem block). */
+@media (max-width: 35rem) {
+  .bottombar { padding-inline: 0.25rem; }
+  .bottombar .pill { gap: 0.125rem; padding: 0.25rem; max-inline-size: 100%; }
+  .bottombar a { padding: 0.625rem 0.5rem; font-size: 0.8125rem; white-space: nowrap; }
+}
+
+/* Seven destinations cannot share one row on the narrowest phones — seven 44px
+   targets plus the 52px fab exceed a 320px viewport — so below the width where
+   one row still fits, the pill becomes a tidy two-row grid of four columns
+   rather than clipping or hiding a destination. */
+@media (max-width: 23rem) {
+  .bottombar .pill {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.125rem;
+    inline-size: 100%;
+  }
+  .bottombar .fab { justify-self: center; }
+  .app { padding-bottom: calc(9rem + env(safe-area-inset-bottom, 0px)); }
+  html { scroll-padding-bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ---------- forms ---------- */
+
+form { display: grid; gap: 1rem; }
+
+.field { display: grid; gap: 0.375rem; }
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 550;
+  color: var(--ink-2);
+  padding-inline: 0.25rem;
+}
+
+.field input,
+.field select {
+  inline-size: 100%;
+  min-block-size: var(--target-size);
+  padding: 0.875rem 1rem;
+  border: none;
+  border-radius: var(--radius-s);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  font: inherit;
+  color: var(--ink);
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.amount-input {
+  font-size: clamp(2rem, 1.4rem + 3vw, 2.5rem) !important;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* segmented payer control */
+.payer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.375rem;
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-s);
+  padding: 0.375rem;
+}
+
+.payer label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-block-size: var(--target-size);
+  padding: 0.75rem;
+  border-radius: calc(var(--radius-s) - 4px);
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.payer input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  inline-size: 1px;
+  block-size: 1px;
+  min-inline-size: 0;
+  min-block-size: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/* The radio itself is invisible, so the label carries the focus ring. */
+.payer label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.payer label:has(input:checked).llama { background: color-mix(in srgb, var(--llama) 15%, var(--tint-base)); color: var(--llama-ink); }
+.payer label:has(input:checked).mono { background: color-mix(in srgb, var(--mono) 15%, var(--tint-base)); color: var(--mono-ink); }
+
+/* live split preview */
+.preview {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-m);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  font-variant-numeric: tabular-nums;
+}
+.preview .side { display: grid; text-align: center; gap: 0.125rem; }
+.preview .side .name { font-size: 0.8125rem; font-weight: 600; }
+.preview .side .name.llama { color: var(--llama-ink); }
+.preview .side .name.mono { color: var(--mono-ink); }
+.preview .side .val { font-weight: 700; font-size: 1.125rem; }
+
+/* ---------- buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-block-size: var(--target-size);
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-m);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-weight: 650;
+  font-size: 1.0625rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn.secondary {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+}
+
+/* ---------- login ---------- */
+
+.login {
+  min-block-size: 100dvh;
+  display: grid;
+  align-content: center;
+  gap: 2rem;
+}
+
+.login .brand { text-align: center; display: grid; gap: 0.5rem; }
+.login .brand .wordmark { font-size: clamp(3.75rem, 3rem + 3.75vw, 4.5rem); }
+.login .brand p { color: var(--ink-2); }
+.login .hint { text-align: center; color: var(--ink-3); font-size: 0.8125rem; }
+.login .hint[data-passkey-status] { text-align: start; }
+
+.btn svg { flex: none; }
+
+.notice {
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-s);
+  font-size: 0.9375rem;
+  font-weight: 550;
+}
+.notice.error {
+  background: color-mix(in srgb, var(--negative) 12%, var(--tint-base));
+  color: color-mix(in srgb, var(--negative) 70%, var(--tint-ink));
+}
+.notice.ok {
+  background: color-mix(in srgb, var(--positive) 15%, var(--tint-base));
+  color: color-mix(in srgb, var(--positive) 55%, var(--tint-ink));
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--ink-3);
+  font-size: 0.8125rem;
+  font-weight: 550;
+}
+.divider::before, .divider::after {
+  content: "";
+  flex: 1;
+  block-size: 1px;
+  background: var(--border-strong);
+}
+
+/* ---------- mockup index ---------- */
+
+.mockindex { display: grid; gap: 0.75rem; align-content: center; min-block-size: 100dvh; }
+.mockindex a {
+  display: block;
+  padding: 1.25rem;
+  background: var(--card);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-card);
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 600;
+}
+.mockindex a span { display: block; font-weight: 400; font-size: 0.875rem; color: var(--ink-2); }
+
+/* wider containers: two-column where it fits */
+@container app (inline-size > 24rem) {
+  .stat-row { grid-template-columns: 1fr 1fr; }
+}
+
+.stat-row { display: grid; gap: 1rem; }
+.stat {
+  background: var(--card);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-card);
+  padding: 1rem 1.25rem;
+  display: grid;
+  gap: 0.125rem;
+}
+.stat .k { font-size: 0.8125rem; color: var(--ink-2); font-weight: 550; }
+.stat .v { font-size: 1.375rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+
+/* ---------- analytics ---------- */
+
+.analytics-total { display: grid; gap: 0.5rem; align-content: start; }
+.analytics-total .v {
+  font-size: clamp(1.75rem, 1.4rem + 2vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* compact year picker, not the full-width form field */
+.year-form { display: flex; align-items: center; gap: 0.5rem; }
+.year-form label { font-size: 0.875rem; font-weight: 550; color: var(--ink-2); }
+.year-form select {
+  min-block-size: var(--target-size);
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: var(--radius-s);
+  background: var(--bg);
+  box-shadow: var(--shadow-card);
+  font: inherit;
+  font-weight: 650;
+  color: var(--ink);
+}
+.year-form select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Shown only while the year change navigates (see the inline script). */
+.year-loading { font-size: 0.8125rem; font-weight: 550; color: var(--ink-2); }
+
+/* 12 monthly bars, each scaled by --h to a share of the busiest month */
+.chart-months {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0.25rem;
+  align-items: end;
+  block-size: 9rem;
+  margin-block-start: 0.5rem;
+}
+.bar-col {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 0.375rem;
+  justify-items: center;
+  min-inline-size: 0;
+  block-size: 100%;
+}
+.bar-track { inline-size: 100%; block-size: 100%; display: flex; align-items: flex-end; }
+.bar-fill {
+  inline-size: 100%;
+  block-size: var(--h, 0%);
+  min-block-size: 3px;
+  border-radius: 999px 999px 0 0;
+  background: var(--accent);
+}
+/* A month with no spending keeps a thin baseline tick rather than nothing. */
+.bar-fill.zero { background: var(--border-strong); }
+.bar-month { font-size: 0.6875rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+.top-months { list-style: none; margin: 0; padding: 0; display: grid; }
+.top-months li { display: flex; align-items: center; gap: 0.625rem; padding-block: 0.625rem; }
+.top-months li + li { border-block-start: 1px solid var(--border-subtle); }
+.top-months .rank {
+  flex: none;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--state-selected);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.top-months .name { flex: 1; font-weight: 550; }
+.top-months .amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.categories { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.cat { display: grid; gap: 0.375rem; }
+.cat .row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; font-size: 0.9375rem; }
+.cat .name { font-weight: 550; }
+.cat .amt { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.cat-bar { block-size: 8px; border-radius: 999px; background: var(--bg); overflow: hidden; }
+.cat-bar > i { display: block; block-size: 100%; border-radius: 999px; background: var(--accent); }
+
+/* ---------- settings ---------- */
+
+.settings-card { display: grid; gap: 1rem; align-content: start; }
+.settings-card h2 { font-size: 1.0625rem; font-weight: 650; }
+.settings-card form { display: grid; gap: 1rem; align-content: start; }
+.settings-card .btn.secondary { inline-size: 100%; }
+
+/* ---------- appearance control ---------- */
+
+.appearance {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.appearance legend {
+  padding: 0;
+  font-size: 1.0625rem;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.appearance .hint { margin: 0; }
+
+.appearance-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.appearance-options label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-block-size: var(--target-size);
+  padding: 0.625rem 0.5rem;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--border-subtle);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  font-size: 0.875rem;
+  font-weight: 550;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.appearance-options label:has(input:checked) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--tint-base));
+  /* --accent-text, not --accent: the raw hue drops to 4.31:1 on this tint. */
+  color: var(--accent-text);
+}
+
+.appearance-options input {
+  inline-size: 1rem;
+  block-size: 1rem;
+  margin: 0;
+  flex: none;
+  accent-color: var(--accent);
+}
+
+.appearance-options label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.muted { color: var(--ink-2); }
+
+.passkeys {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.passkeys li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block: 0.625rem;
+}
+
+.passkeys li + li { border-block-start: 1px solid var(--border-subtle); }
+
+.passkeys .meta { flex: 1; min-inline-size: 0; }
+.passkeys .name { font-weight: 550; overflow-wrap: anywhere; }
+.passkeys .when { font-size: 0.8125rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+.passkeys form { display: block; }
+
+.btn.danger {
+  background: color-mix(in srgb, var(--negative) 12%, var(--tint-base));
+  color: color-mix(in srgb, var(--negative) 70%, var(--tint-ink));
+  padding: 0.625rem 1rem;
+  font-size: 0.9375rem;
+  border-radius: var(--radius-s);
+}
+
+/* ---------- about ---------- */
+
+.about-card { display: grid; gap: 0.75rem; align-content: start; }
+.about-card .section-title { padding-inline: 0; }
+.about-card p { color: var(--ink-2); line-height: 1.5; }
+
+.about-meta {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding-block-start: 0.875rem;
+  border-block-start: 1px solid var(--border-subtle);
+}
+
+.about-meta > div {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.about-meta dt {
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  font-weight: 550;
+}
+
+.about-meta dd { margin: 0; min-inline-size: 0; overflow-wrap: anywhere; }
+
+.about-meta a {
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.about-meta a:hover { text-decoration: underline; }
+
+/* ---------- desktop shell (>= 64rem) ---------- */
+
+.sidebar { display: none; }
+
+@media (min-width: 64rem) {
+	.bottombar { display: none; }
+
+	.sidebar {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		position: fixed;
+		inset-block: 0;
+		inset-inline-start: 0;
+		inline-size: 14rem;
+		padding: 2rem 1rem;
+		background: var(--card);
+		border-inline-end: 1px solid var(--border-sidebar);
+	}
+
+	/* The menu-link sizing in `.sidebar a` would otherwise shrink the brand:
+	   it has higher specificity than the base `.wordmark` rule. */
+	.sidebar .wordmark {
+		padding-inline: 0.75rem;
+		font-size: clamp(2.25rem, 1.8rem + 2.25vw, 2.625rem);
+	}
+
+	.sidebar ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.25rem;
+	}
+
+	.sidebar a {
+		display: flex;
+		align-items: center;
+		min-block-size: var(--target-size);
+		padding: 0.75rem;
+		border-radius: var(--radius-s);
+		color: var(--ink-2);
+		text-decoration: none;
+		font-weight: 550;
+		font-size: 0.9375rem;
+	}
+
+	.sidebar a.active { color: var(--ink); background: var(--state-selected); }
+
+	/* Content column clears the 14rem rail plus a 3rem gutter, centered in
+	   what remains. */
+	.app {
+		max-inline-size: calc(72rem + 17rem);
+		padding: 2.5rem 3rem 3rem 17rem;
+	}
+
+	/* The rail carries the wordmark; the page topbar doesn't repeat it. */
+	.topbar .wordmark { visibility: hidden; }
+
+	.dash-grid {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 3fr 2fr;
+		grid-template-areas:
+			"hero side"
+			"full full";
+		align-items: start;
+	}
+	.dash-hero { grid-area: hero; display: grid; gap: 1rem; align-content: start; }
+	.dash-side { grid-area: side; display: grid; gap: 1rem; align-content: start; }
+	.dash-full { grid-area: full; display: grid; gap: 1rem; align-content: start; }
+	.dash-side .stat-row { grid-template-columns: 1fr; }
+
+	.analytics-grid {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 3fr 2fr;
+		grid-template-areas:
+			"trend trend"
+			"months cats";
+		align-items: start;
+	}
+	.analytics-trend { grid-area: trend; }
+	.analytics-months { grid-area: months; }
+	.analytics-cats { grid-area: cats; }
+
+	.form-grid {
+		display: grid;
+		grid-template-columns: 3fr 2fr;
+		gap: 1rem;
+		align-items: start;
+	}
+	.form-grid .form-aside { display: grid; gap: 1rem; align-content: start; position: sticky; inset-block-start: 2.5rem; }
+
+	.form-page { max-inline-size: calc(36rem + 17rem); }
+
+	.expenses li { padding: 1rem 1.25rem; }
+}
+
+@media (pointer: fine) {
+	.expenses li:hover { background: var(--state-hover-subtle); }
+	.sidebar a:hover { background: var(--state-hover); color: var(--ink); }
+}
+
+/* The sidebar wordmark is the way home — there is no Home nav item. It sits
+   above the menu in DOM order and needs no auto margin: it stays at the top of
+   the rail while the theme toggle below the menu carries the auto margin that
+   anchors it to the bottom. */
+.sidebar .brand {
+	display: block;
+	min-block-size: var(--target-size);
+	padding: 0.75rem;
+	border-radius: var(--radius-s);
+	color: inherit;
+	text-decoration: none;
+}
+@media (pointer: fine) {
+	.sidebar .brand:hover { background: var(--state-hover); }
+}
+
+/* Icon-only appearance control at the bottom of the rail. The auto top margin
+   pushes it below the menu without any CSS reordering. Its size is the 44px
+   coarse-pointer target so it stays tappable. The three inline SVGs are the
+   only content; the visible state is driven by the `hidden` attribute. The
+   browser's UA `[hidden] { display: none }` rule does not match SVG-namespace
+   elements, so the scoped rule below supplies it. */
+.theme-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-block-start: auto;
+	align-self: flex-start;
+	inline-size: 2.75rem;
+	block-size: 2.75rem;
+	padding: 0;
+	border: 1px solid var(--border-sidebar);
+	border-radius: 50%;
+	background: none;
+	color: var(--ink-2);
+	cursor: pointer;
+}
+.theme-toggle svg[hidden] { display: none; }
+@media (pointer: fine) {
+	.theme-toggle:hover { background: var(--state-hover); color: var(--ink); }
+}
+
+/* Available to assistive technology without occupying layout space. */
+.visually-hidden {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	margin: -1px;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}

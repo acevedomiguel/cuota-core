@@ -48,9 +48,13 @@ describe("repository hygiene", () => {
 		expect(offenders).toEqual([]);
 	});
 
-	it("keeps src free of host-specific imports and browser globals", () => {
+	it("keeps server code free of host-specific imports and browser globals", () => {
 		const offenders: string[] = [];
 		for (const file of walk(join(ROOT, "src"))) {
+			// Views are browser-side: their inline scripts legitimately touch the
+			// DOM. The generated module is their compiled form, so it is skipped
+			// with them.
+			if (file.endsWith(".ejs") || file.endsWith("views-compiled.ts")) continue;
 			const text = readFileSync(file, "utf8");
 			for (const pattern of ['from "node:', "require(", "process.env", "window.", "document."]) {
 				if (text.includes(pattern)) offenders.push(`${relative(ROOT, file)}: ${pattern}`);

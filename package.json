@@ -21,13 +21,20 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build:views": "node scripts/build-views.ts",
+    "build": "npm run build:views && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "npm run build:views && vitest run",
     "ci": "npm run typecheck && npm run build && npm test"
   },
+  "dependencies": {
+    "@simplewebauthn/server": "^14.1.0",
+    "hono": "^4.13.18"
+  },
   "devDependencies": {
+    "@types/ejs": "^3.1.5",
     "@types/node": "^24.10.1",
+    "ejs": "^3.1.10",
     "typescript": "^5.9.3",
     "vitest": "^4.0.6"
   }
