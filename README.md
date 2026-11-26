@@ -28,14 +28,69 @@ const app = createCuotaApp({
 ```
 
 The result is a Hono app: `app.request(request)` in a test, `app.fetch` on a
-serverless runtime, `serve(app.fetch)` behind a Node server.
+serverless runtime, or `serve(app.fetch)` behind a Node server.
+
+## Running it
+
+Node, with a SQLite file:
+
+```sh
+npm ci
+npm run build:server
+DATABASE_URL=file:./data/cuota.db ALLOWED_EMAILS=you@example.com npm start
+# http://localhost:3000, health at /healthz
+```
+
+Migrations are applied at startup, before the server listens, and rerunning is
+a no-op.
+
+Docker, with its own PostgreSQL:
+
+```sh
+cp .env.example .env         # set ALLOWED_EMAILS at minimum
+docker compose --profile bundled up --build
+```
+
+Docker, against a database you already run: put `postgres://…` in
+`DATABASE_URL` in `.env`, then
+
+```sh
+docker compose --profile external up --build
+```
+
+The image runs as the unprivileged `node` user and defaults to SQLite at
+`file:./data/cuota.db`, so it also works with no database service at all. Every
+variable is documented in `.env.example`.
+
+### Smoke test
+
+`npm run smoke` drives a running instance over HTTP: signup, login, salary,
+expense, dashboard, analytics, settings, logout.
+
+```sh
+BASE_URL=http://127.0.0.1:3000 SMOKE_EMAIL=you@example.com npm run smoke
+```
+
+### Password recovery
+
+With no email sending, the owner resets a password from the host:
+
+```sh
+npm run reset-password -- you@example.com
+```
+
+It reads the password from stdin, never from an argument, so it cannot land in
+shell history or a process list. Pipe it in non-interactively:
+
+```sh
+printf 'a-long-new-password' | npm run reset-password -- you@example.com
+```
 
 ## Status
 
-The application is extracted: `createCuotaApp` builds the whole app from its
-three ports, and `adapters/` holds host drivers (SQLite through Node's built-in
-driver, a static file handler). PostgreSQL persistence and a Node server
-entry are next.
+The application is extracted behind ports, PostgreSQL persistence is in place,
+and the Node server and Docker image run both database modes. A first-run setup
+wizard is the next piece: today the first account still needs `ALLOWED_EMAILS`.
 
 ## Requirements
 
@@ -45,26 +100,25 @@ Node.js 24 or newer (see `.nvmrc`).
 
 ```sh
 npm ci
-npm run ci      # typecheck, build, test
+npm run ci      # typecheck, package build, server build, test
 npm test
 npm run build
 ```
 
 `npm run build` compiles the EJS views to plain functions and then the
-TypeScript to `dist/`. The compiled views are committed because a serverless
-runtime forbids `new Function`.
+TypeScript package to `dist/`. The compiled views are committed because a
+serverless runtime forbids `new Function`. `npm run build:server` compiles the
+container entry and adapters to `build/`.
 
 ## Layout
 
 ```text
 src/         runtime-neutral core: domain logic, routes, views, the factory
-adapters/    host drivers: SQLite, static files
-migrations/  SQLite schema
+adapters/    host drivers: SQLite, PostgreSQL, static files, migrations
+server/      container entry, environment loading, password recovery
+migrations/  SQLite schema; migrations/postgres/ mirrors it
 test/        unit and integration tests, plain Node, no network
 ```
-
-Adapters for a specific database or host belong here or in the consuming
-repository; the core never imports them.
 
 ## Databases
 
@@ -98,6 +152,9 @@ TEST_DATABASE_URL=postgres://cuota:cuota@localhost:55432/cuota_test npm test
 - `AppConfig` — allowlist, passkey relying party, optional invoice reading,
   version, and the optional about-page contact block.
 
+`createCuotaApp` also takes an `extend` hook, mounted before the auth gate, for
+host routes such as `/healthz`.
+
 ## Design rules
 
 - `src/` imports no Node built-ins, no host-specific types, and no deployment
@@ -107,7 +164,8 @@ TEST_DATABASE_URL=postgres://cuota:cuota@localhost:55432/cuota_test npm test
   lexicographically, so string comparison is chronological comparison.
 - A split is frozen when the expense is recorded. History is never recomputed
   from a later income change.
-- Tests must not require the network or real personal data.
+- Tests must not require the network or real personal data, and must pass on
+  both database engines.
 
 ## License
 

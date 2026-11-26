@@ -24,7 +24,9 @@ export interface CuotaAppOptions {
 	config: AppConfig;
 	/** Serves `/static/*`; a binding, a directory, or an in-memory map. */
 	assets: AssetHandler;
-	/** Mount extra routes last, e.g. a host's health or metadata endpoint. */
+	/** Mount extra routes before the auth gate, e.g. a health or metadata
+	 * endpoint that must answer without a session. They see the database,
+	 * config, and assets on the context but no session or user. */
 	extend?: (app: Hono<AppEnv>) => void;
 }
 
@@ -48,6 +50,11 @@ export function createCuotaApp({ database, config, assets, extend }: CuotaAppOpt
 		url.pathname = url.pathname.replace(/^\/static/, "") || "/";
 		return c.get("assets").fetch(new Request(url.toString(), c.req.raw));
 	});
+
+	// Host routes live here, before the auth gate, so a health check or a
+	// metadata endpoint can answer without a session. Everything a normal page
+	// needs is already on the context.
+	extend?.(app);
 
 	app.use(sessionMiddleware);
 
@@ -130,8 +137,6 @@ export function createCuotaApp({ database, config, assets, extend }: CuotaAppOpt
 	app.route("/", passkeyRoutes);
 	app.route("/", scanRoutes);
 	app.route("/", settingsRoutes);
-
-	extend?.(app);
 
 	return app;
 }

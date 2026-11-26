@@ -23,11 +23,16 @@
   "scripts": {
     "build:views": "node scripts/build-views.ts",
     "build": "npm run build:views && tsc -p tsconfig.build.json",
+    "build:server": "tsc -p tsconfig.server.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build:views && vitest run",
-    "ci": "npm run typecheck && npm run build && npm test"
+    "start": "node build/server/main.js",
+    "reset-password": "node build/server/reset-password.js",
+    "smoke": "node scripts/smoke.mjs",
+    "ci": "npm run typecheck && npm run build && npm run build:server && npm test"
   },
   "dependencies": {
+    "@hono/node-server": "^2.1.11",
     "@simplewebauthn/server": "^14.1.0",
     "hono": "^4.13.18",
     "pg": "^8.23.1"

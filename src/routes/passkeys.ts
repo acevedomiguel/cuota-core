@@ -24,6 +24,9 @@ import {
 const CHALLENGE_TIMEOUT_MS = 5 * 60 * 1000;
 const SUPPORTED_ALGORITHMS = [-7, -257];
 
+/** Shown when a deployment has no relying party configured. */
+export const PASSKEYS_OFF = "Passkeys are not set up on this deployment.";
+
 const app = new Hono<AppEnv>();
 
 app.post("/passkeys/register/options", async (c) => {
@@ -31,6 +34,7 @@ app.post("/passkeys/register/options", async (c) => {
 	// never trust the cookie's userId on its own.
 	const user = c.get("user");
 	if (!user) return c.json({ error: "Sign in first." }, 401);
+	if (!c.get("config").passkeys) return c.json({ error: PASSKEYS_OFF }, 503);
 	const userId = user.id;
 
 	const { rpID } = passkeyConfig(c.get("config"));
@@ -63,6 +67,7 @@ app.post("/passkeys/register/options", async (c) => {
 app.post("/passkeys/register/verify", async (c) => {
 	const user = c.get("user");
 	if (!user) return c.json({ error: "Sign in first." }, 401);
+	if (!c.get("config").passkeys) return c.json({ error: PASSKEYS_OFF }, 503);
 	const userId = user.id;
 
 	const expected = consumePasskeyChallenge(c.get("session"), "registration");
@@ -110,6 +115,7 @@ app.post("/passkeys/register/verify", async (c) => {
 });
 
 app.post("/login/passkey/options", async (c) => {
+	if (!c.get("config").passkeys) return c.json({ error: PASSKEYS_OFF }, 503);
 	const { rpID } = passkeyConfig(c.get("config"));
 	const challenge = issuePasskeyChallenge(c.get("session"), "authentication");
 	return c.json(
@@ -124,6 +130,7 @@ app.post("/login/passkey/options", async (c) => {
 });
 
 app.post("/login/passkey/verify", async (c) => {
+	if (!c.get("config").passkeys) return c.json({ error: PASSKEYS_OFF }, 503);
 	const expected = consumePasskeyChallenge(c.get("session"), "authentication");
 	if (!expected) return c.json({ error: "Passkey sign-in expired. Try again." }, 400);
 	const credential = ((await c.req.json().catch(() => undefined)) as { credential?: AuthenticationResponseJSON } | undefined)
