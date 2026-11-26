@@ -1,0 +1,55 @@
+test/scaffold.test.ts
+  s_c1d9650f887c7a::t_c2b1e4ac5680e9 8,21-25,30-45,48-53,59-60,97
+README.md
+  s_c1d9650f887c7a::t_9660a1f48c9fac 31-87,91-93,103,109-111,117-119,155-157,167-168
+.env.example
+  s_c1d9650f887c7a::t_20a1e2b52cee7f 1-33
+src/app.ts
+  s_c1d9650f887c7a::t_b933748db3c2ef 27-29,54-58
+src/routes/passkeys.ts
+  s_c1d9650f887c7a::t_cb3dd36a54a90f 27-29,37,70,118,133
+server/reset-password.ts
+  s_c1d9650f887c7a::t_432c3c29e08d7e 1-18,24-123
+  s_c1d9650f887c7a::t_8204ed4bab6c6c 19-23
+.dockerignore
+  s_c1d9650f887c7a::t_47bb088e9ccf71 1-14
+server/database.ts
+  s_c1d9650f887c7a::t_54343e947f7a43 1-32
+Dockerfile
+  s_c1d9650f887c7a::t_7b88a65062f5c0 1-33
+.gitignore
+  s_c1d9650f887c7a::t_449d35d70badc9 3,5
+server/main.ts
+  s_c1d9650f887c7a::t_8afbe22d51ff7e 1-64
+package.json
+  s_c1d9650f887c7a::t_063540753b5c0f 26,29-32
+  s_c1d9650f887c7a::t_3683b14f9d9047 35
+tsconfig.server.json
+  s_c1d9650f887c7a::t_788177dc4a55c0 1-14
+scripts/smoke.mjs
+  s_c1d9650f887c7a::t_8455db5830393a 1-129
+server/env.ts
+  s_c1d9650f887c7a::t_0d6921996ea396 1-63
+compose.yaml
+  s_c1d9650f887c7a::t_9297e34699b30b 1-55
+tsconfig.json
+  s_c1d9650f887c7a::t_05f2b12d8770b9 16
+package-lock.json
+  s_c1d9650f887c7a::t_0cfcb8bb5d74ed 12,69-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "1ae7e6b5103972cccb5a1df625fa9c5efee8cf5f",
+  "prompts": {},
+  "sessions": {
+    "s_c1d9650f887c7a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de8e87126ffeFZMsPRnTY6jteX",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
