@@ -52,6 +52,7 @@ export function loadSettings(env: NodeJS.ProcessEnv = process.env): ServerSettin
 		passkeys: rpId && origin ? { rpId, origin, rpName: env.PASSKEY_RP_NAME?.trim() || "Cuota" } : null,
 		invoiceReader: apiKey ? { apiKey, ...(env.DEEPSEEK_MODEL ? { model: env.DEEPSEEK_MODEL } : {}) } : null,
 		version: env.APP_VERSION?.trim() || "0.0.0-dev",
+		setupToken: env.SETUP_TOKEN?.trim() || undefined,
 		...(about ? { about } : {}),
 	};
 

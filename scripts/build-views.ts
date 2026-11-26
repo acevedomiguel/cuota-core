@@ -49,6 +49,7 @@ const LOCALS = [
 	"theme",
 	"title",
 	"today",
+	"tokenRequired",
 	"user",
 	"other",
 	"values",

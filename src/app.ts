@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import type { AppEnv } from "./app-env.js";
 import { currentUser, ensureCsrfToken, validCsrfToken } from "./auth.js";
+import { userCount } from "./setup.js";
 import type { AppConfig } from "./config.js";
 import { buildHome } from "./home.js";
 import type { AssetHandler, SqlDatabase } from "./ports.js";
@@ -16,6 +17,7 @@ import openingRoutes from "./routes/opening.js";
 import passkeyRoutes from "./routes/passkeys.js";
 import scanRoutes, { MAX_UPLOAD_BYTES, OVERSIZE_MESSAGE, scanLocals } from "./routes/scan.js";
 import settingsRoutes from "./routes/settings.js";
+import setupRoutes from "./routes/setup.js";
 
 export interface CuotaAppOptions {
 	/** Where the ledger lives. The host supplies the driver. */
@@ -64,19 +66,28 @@ export function createCuotaApp({ database, config, assets, hostRoutes }: CuotaAp
 		await next();
 	});
 
-	const PUBLIC_PATHS = ["/login", "/signup"];
+	const PUBLIC_PATHS = ["/login", "/signup", "/setup"];
 	const PUBLIC_PREFIXES = ["/login/passkey/"];
 
 	function isPublic(path: string): boolean {
 		return PUBLIC_PATHS.includes(path) || PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix));
 	}
 
+	// Route registration order matters: /setup must exist before the gate
+	// decides whether the database is empty.
 	app.use(async (c, next) => {
 		const path = c.req.path;
 		const user = await currentUser(c.get("db"), c.get("session"));
 
-		if (!user && !isPublic(path)) return c.redirect("/login", 303);
 		if (user && path === "/login" && c.req.method === "GET") return c.redirect("/", 303);
+
+		if (!user) {
+			// A fresh deployment has nobody to sign in as, so every page goes to
+			// setup until the first account exists. One count, only for callers
+			// with no session.
+			if (path !== "/setup" && (await userCount(c.get("db"))) === 0) return c.redirect("/setup", 303);
+			if (!isPublic(path)) return c.redirect("/login", 303);
+		}
 
 		c.set("user", user);
 		await next();
@@ -138,6 +149,7 @@ export function createCuotaApp({ database, config, assets, hostRoutes }: CuotaAp
 	app.route("/", passkeyRoutes);
 	app.route("/", scanRoutes);
 	app.route("/", settingsRoutes);
+	app.route("/", setupRoutes);
 
 	return app;
 }
