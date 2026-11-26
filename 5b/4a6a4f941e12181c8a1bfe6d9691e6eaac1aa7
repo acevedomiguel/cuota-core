@@ -1,0 +1,76 @@
+test/dark-mode.test.ts
+  s_c1d9650f887c7a::t_ca881f0e7844da 3
+  s_c1d9650f887c7a::t_53b7c2415ab6a6 16
+test/session.test.ts
+  s_c1d9650f887c7a::t_d2e9a3c8a7a455 3
+  s_c1d9650f887c7a::t_53b7c2415ab6a6 36
+test/helpers.ts
+  s_c1d9650f887c7a::t_7f22f52a79ab3f 2-3,8-9,12,117
+src/migrations.ts
+  s_c1d9650f887c7a::t_848091746e178e 1-54
+test/postgres.test.ts
+  s_c1d9650f887c7a::t_e8607503bee8f9 1-68
+test/db.test.ts
+  s_c1d9650f887c7a::t_53b7c2415ab6a6 20
+  s_c1d9650f887c7a::t_6deeb89128e2a7 3
+README.md
+  s_c1d9650f887c7a::t_2a75f9635d0b89 69-91
+src/index.ts
+  s_c1d9650f887c7a::t_3011e711ab06e1 17-18
+migrations/postgres/0003_expense_categories.sql
+  s_c1d9650f887c7a::t_f501290a6ef778 1-3
+migrations/postgres/0002_expenses.sql
+  s_c1d9650f887c7a::t_ac3ba96e4f7130 1-43
+.github/workflows/ci.yml
+  s_c1d9650f887c7a::t_818c3e2a08518a 23-43
+  s_58b6f55c0833f4::t_c38c948498015b 16-22
+adapters/migration-files.ts
+  s_c1d9650f887c7a::t_2c218fcbd98dcd 1-21
+CONTRIBUTING.md
+  s_c1d9650f887c7a::t_24eade0ede5a7b 25-28
+migrations/postgres/0001_init.sql
+  s_c1d9650f887c7a::t_fae715580bf81e 1-40
+adapters/postgres.ts
+  s_c1d9650f887c7a::t_36177d0567f220 1,3-7
+  s_c1d9650f887c7a::t_484155f96fc2c6 2,8-128
+test/contract/sql-database.contract.ts
+  s_c1d9650f887c7a::t_3a243add3e48dc 1-74,77-79
+  s_c1d9650f887c7a::t_a8746e1a6ece02 75-76
+test/app.test.ts
+  s_c1d9650f887c7a::t_44362783f2f9da 3
+  s_c1d9650f887c7a::t_53b7c2415ab6a6 8
+test/dialect.ts
+  s_c1d9650f887c7a::t_f5690c5546f2f9 1-35
+test/harness.ts
+  s_c1d9650f887c7a::t_625da33d56c4e1 1,5,8-11,14-21
+test/ports.test.ts
+  s_c1d9650f887c7a::t_3c2c066a079136 2-3,5,11,17
+package.json
+  s_c1d9650f887c7a::t_7d479f5d9c0060 32-33,38
+package-lock.json
+  s_c1d9650f887c7a::t_dacb2761451ff3 13-14,19,726-737,1375-1463,1513-1551,1628-1636,1924-1932
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "5b4a6a4f941e12181c8a1bfe6d9691e6eaac1aa7",
+  "prompts": {},
+  "sessions": {
+    "s_58b6f55c0833f4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de8e37bb1ffeg7g6B9LpPtCNn5",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    },
+    "s_c1d9650f887c7a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de8e87126ffeFZMsPRnTY6jteX",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
