@@ -26,8 +26,9 @@ export interface CuotaAppOptions {
 	assets: AssetHandler;
 	/** Mount extra routes before the auth gate, e.g. a health or metadata
 	 * endpoint that must answer without a session. They see the database,
-	 * config, and assets on the context but no session or user. */
-	extend?: (app: Hono<AppEnv>) => void;
+	 * config, and assets on the context but no session or user, so everything
+	 * mounted here is public: do not put pages behind it. */
+	hostRoutes?: (app: Hono<AppEnv>) => void;
 }
 
 /**
@@ -35,7 +36,7 @@ export interface CuotaAppOptions {
  * build serves a container, a serverless runtime, or a test with no changes:
  * only the three ports differ between hosts.
  */
-export function createCuotaApp({ database, config, assets, extend }: CuotaAppOptions): Hono<AppEnv> {
+export function createCuotaApp({ database, config, assets, hostRoutes }: CuotaAppOptions): Hono<AppEnv> {
 	const app = new Hono<AppEnv>();
 
 	app.use(async (c, next) => {
@@ -54,7 +55,7 @@ export function createCuotaApp({ database, config, assets, extend }: CuotaAppOpt
 	// Host routes live here, before the auth gate, so a health check or a
 	// metadata endpoint can answer without a session. Everything a normal page
 	// needs is already on the context.
-	extend?.(app);
+	hostRoutes?.(app);
 
 	app.use(sessionMiddleware);
 

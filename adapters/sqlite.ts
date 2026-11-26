@@ -58,6 +58,18 @@ class SqliteDatabase implements SqlDatabase {
 		if (!row) throw new Error("could not read the database clock");
 		return row.now;
 	}
+
+	async withTransaction<T>(work: (db: SqlDatabase) => Promise<T>): Promise<T> {
+		this.db.exec("BEGIN");
+		try {
+			const result = await work(this);
+			this.db.exec("COMMIT");
+			return result;
+		} catch (error) {
+			this.db.exec("ROLLBACK");
+			throw error;
+		}
+	}
 }
 
 /** Opens an in-memory database by default: a fresh one per caller. */

@@ -1,7 +1,7 @@
 import { createMiddleware } from "hono/factory";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import type { AppEnv } from "./app-env.js";
-import { insertSettingIfAbsent, getSetting } from "./db.js";
+import { getSetting, insertSettingIfAbsent, setSetting } from "./db.js";
 import type { Session, SqlDatabase } from "./ports.js";
 
 export const SESSION_COOKIE = "cuota_session";
@@ -98,6 +98,10 @@ export async function verifySessionPayload(
 	}
 }
 
+function encodeKey(key: Uint8Array): string {
+	return btoa(String.fromCharCode(...key));
+}
+
 /**
  * The cookie-signing key, created once and kept in `settings` so sessions
  * survive a restart or a move between databases.
@@ -113,11 +117,20 @@ export async function getOrCreateSessionKey(db: SqlDatabase): Promise<Uint8Array
 
 	const generated = new Uint8Array(32);
 	crypto.getRandomValues(generated);
-	await insertSettingIfAbsent(db, "session_key", btoa(String.fromCharCode(...generated)));
+	await insertSettingIfAbsent(db, "session_key", encodeKey(generated));
 
 	const stored = await readSessionKey(db);
-	if (!stored) throw new Error("could not persist the session key");
-	return stored;
+	if (stored) return stored;
+
+	// The row exists but is unusable: not base64, or not 32 bytes. Refusing to
+	// start would lock every user out until someone edited the database, so
+	// replace it. Sessions signed with the old key are invalidated, which is
+	// the honest outcome — they could never be verified again anyway.
+	await setSetting(db, "session_key", encodeKey(generated));
+
+	const replaced = await readSessionKey(db);
+	if (!replaced) throw new Error("could not persist the session key");
+	return replaced;
 }
 
 async function readSessionKey(db: SqlDatabase): Promise<Uint8Array | null> {

@@ -219,13 +219,15 @@ export interface NewSnapshot {
 	balanceCents: number;
 }
 
-/** Inserts a snapshot. Duplicate cutoffs violate the unique index. */
+/** Inserts a snapshot, or refreshes the one already sealed at this cutoff. */
 export async function createSnapshot(db: SqlDatabase, s: NewSnapshot): Promise<number> {
 	const createdAt = await db.now();
 	const row = await db
 		.prepare(
 			`INSERT INTO snapshots (cutoff, balance_cents, created_at)
-			 VALUES (?, ?, ?) RETURNING id`,
+			 VALUES (?, ?, ?)
+			 ON CONFLICT(cutoff) DO UPDATE SET balance_cents = excluded.balance_cents
+			 RETURNING id`,
 		)
 		.bind(s.cutoff, s.balanceCents, createdAt)
 		.first<{ id: number }>();

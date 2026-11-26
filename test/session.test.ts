@@ -43,6 +43,19 @@ describe("session key", () => {
 		const second = await getOrCreateSessionKey(env.DB);
 		expect(second).toEqual(first);
 	});
+
+	it("replaces a stored key that could never verify a session", async () => {
+		// Truncated, not base64, or the wrong length: the old code regenerated
+		// and overwrote, and refusing to start instead would lock everyone out
+		// permanently. The row must be repaired, not just rejected.
+		for (const broken of ["", "not-base64!!", btoa("too-short")]) {
+			await env.DB.prepare("UPDATE settings SET value = ? WHERE key = 'session_key'").bind(broken).run();
+			const repaired = await getOrCreateSessionKey(env.DB);
+			expect(repaired.length).toBe(32);
+			// Stable from then on.
+			expect(await getOrCreateSessionKey(env.DB)).toEqual(repaired);
+		}
+	});
 });
 
 describe("CookieSession", () => {

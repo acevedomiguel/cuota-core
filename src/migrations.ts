@@ -19,10 +19,23 @@ export interface MigrationResult {
 
 const LEDGER = "schema_migrations";
 
+async function applyOne(db: SqlDatabase, migration: Migration): Promise<void> {
+	await db.exec(migration.sql);
+	await db
+		.prepare(`INSERT INTO ${LEDGER} (version, applied_at) VALUES (?, ?)`)
+		.bind(migration.version, await db.now())
+		.run();
+}
+
 /**
  * Applies every migration not yet recorded, oldest first, and records it.
  * Idempotent: running it twice applies nothing the second time. Versions are
  * compared as strings, which is why they are zero-padded.
+ *
+ * Each migration and its ledger row run in one transaction when the engine
+ * supports it. Without that, a migration which half-applies (a table created,
+ * the process killed before the ledger row) would be retried forever and could
+ * leave the app unable to start.
  */
 export async function applyMigrations(
 	db: SqlDatabase,
@@ -42,11 +55,12 @@ export async function applyMigrations(
 			skipped.push(migration.version);
 			continue;
 		}
-		await db.exec(migration.sql);
-		await db
-			.prepare(`INSERT INTO ${LEDGER} (version, applied_at) VALUES (?, ?)`)
-			.bind(migration.version, await db.now())
-			.run();
+
+		if (db.withTransaction) {
+			await db.withTransaction((tx) => applyOne(tx, migration));
+		} else {
+			await applyOne(db, migration);
+		}
 		applied.push(migration.version);
 	}
 

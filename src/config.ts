@@ -25,6 +25,11 @@ export interface AboutConfig {
 	builtBy?: string;
 	email?: string;
 	github?: string;
+	/**
+	 * What is actually running, for a host that can tell: a deployment id, tag,
+	 * or timestamp. Omitted by hosts that cannot.
+	 */
+	deployed?: { label: string; at: string };
 }
 
 export interface AppConfig {

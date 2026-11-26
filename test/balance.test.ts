@@ -7,6 +7,7 @@ import {
 	addBalanceEvent,
 	addIncome,
 	createExpense,
+	createSnapshot,
 	latestSnapshot,
 	listExpenses,
 	listIncomes,
@@ -112,5 +113,22 @@ describe("snapshot-cached balance", () => {
 		await addIncome(db(), { userId: richel, amountCents: 3000, ...at("2026-09-01T00:00:00.000Z") });
 		await refreshSnapshot(db(), mike, richel);
 		expect(await currentBalance(db(), mike, richel)).toBe(await fullBalance(mike, richel));
+	});
+});
+
+describe("snapshots as a cache", () => {
+	it("keeps one row per cutoff when two writers race", async () => {
+		// `nextCutoff` orders sequential refreshes, but two processes can still
+		// compute the same instant. The write is the tie-breaker: the later
+		// recompute wins and the unique cutoff stays unique.
+		await createSnapshot(db(), { cutoff: "2026-12-01T00:00:00.000Z", balanceCents: 100 });
+		await createSnapshot(db(), { cutoff: "2026-12-01T00:00:00.000Z", balanceCents: 250 });
+
+		const rows = await db()
+			.prepare("SELECT balance_cents FROM snapshots WHERE cutoff = ?")
+			.bind("2026-12-01T00:00:00.000Z")
+			.all<{ balance_cents: number }>();
+
+		expect(rows.results).toEqual([{ balance_cents: 250 }]);
 	});
 });

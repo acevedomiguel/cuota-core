@@ -48,6 +48,13 @@ describe("about page", () => {
 		expect(html).toContain('href="https://github.com/example"');
 	});
 
+	it("shows what the host says is deployed, when it can say", async () => {
+		const html = await getPage(session, "/about");
+		expect(html).toContain("Deployed");
+		expect(html).toContain("v9.9.9");
+		expect(html).toContain("2026-01-02 03:04 UTC");
+	});
+
 	it("hardcodes no deployment's own contact details", async () => {
 		const html = await getPage(session, "/about");
 		expect(html).not.toContain("@gmail.com");
