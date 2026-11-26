@@ -70,15 +70,36 @@ async function main() {
 	const health = await request("/healthz");
 	check("/healthz answers 200", health.status === 200, `got ${health.status}`);
 
+	// A fresh instance has no accounts, so /login redirects to /setup: the smoke
+	// sets it up itself. An instance that already has accounts goes through the
+	// ordinary invitation flow, which may refuse an email that already exists —
+	// the login below is what proves the account is usable.
 	let res = await request("/login");
 	let html = await res.text();
-	check("GET /login renders", res.status === 200 && html.includes("Sign in"));
 
-	res = await request("/signup", {
-		method: "POST",
-		body: new URLSearchParams({ _csrf: csrfOf(html), email: EMAIL, name: "Smoke Test", password: PASSWORD }),
-	});
-	check("POST /signup creates or accepts the account", res.status === 303 || res.status === 400, `got ${res.status}`);
+	if (html.includes('action="/setup"')) {
+		res = await request("/setup", {
+			method: "POST",
+			body: new URLSearchParams({
+				_csrf: csrfOf(html),
+				name: "Smoke Test",
+				email: EMAIL,
+				password: PASSWORD,
+			}),
+		});
+		check("POST /setup creates the first account", res.status === 303, `got ${res.status}`);
+	} else {
+		check("GET /login renders", res.status === 200 && html.includes("Sign in"));
+		res = await request("/signup", {
+			method: "POST",
+			body: new URLSearchParams({ _csrf: csrfOf(html), email: EMAIL, name: "Smoke Test", password: PASSWORD }),
+		});
+		check(
+			"POST /signup creates or accepts the account",
+			res.status === 303 || res.status === 400 || res.status === 403,
+			`got ${res.status}`,
+		);
+	}
 
 	resetCookie();
 	res = await request("/login");
