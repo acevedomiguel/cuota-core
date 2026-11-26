@@ -13,6 +13,6 @@
 		"verbatimModuleSyntax": true,
 		"noEmit": true
 	},
-	"include": ["src/**/*.ts", "test/**/*.ts", "adapters/**/*.ts", "scripts/**/*.ts"],
+	"include": ["src/**/*.ts", "test/**/*.ts", "adapters/**/*.ts", "server/**/*.ts", "scripts/**/*.ts"],
 	"exclude": ["node_modules", "dist"]
 }

@@ -1,0 +1,55 @@
+name: cuota-core
+
+services:
+  # Bundled: the app plus its own PostgreSQL, with a named volume.
+  #   docker compose --profile bundled up --build
+  db:
+    profiles: ["bundled"]
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: cuota
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cuota}
+      POSTGRES_DB: cuota
+    volumes:
+      - cuota-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cuota -d cuota"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  app:
+    profiles: ["bundled"]
+    image: cuota-core:${TAG:-local}
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://cuota:${POSTGRES_PASSWORD:-cuota}@db:5432/cuota
+      PORT: 3000
+    ports:
+      - "${HOST_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # External: this app only. Point DATABASE_URL at a database you already run.
+  #   docker compose --profile external up --build
+  app-external:
+    profiles: ["external"]
+    image: cuota-core:${TAG:-local}
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PORT: 3000
+    ports:
+      - "${HOST_PORT:-3000}:3000"
+    restart: unless-stopped
+
+volumes:
+  cuota-data:
