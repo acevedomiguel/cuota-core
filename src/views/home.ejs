@@ -1,0 +1,80 @@
+<%- include("_head") %>
+<main class="app">
+
+  <header class="topbar">
+    <div class="wordmark">cuo<em>ta</em></div>
+    <form action="/logout" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn secondary" type="submit">Sign out</button>
+    </form>
+  </header>
+
+  <div class="dash-grid">
+  <div class="dash-hero">
+    <section class="card balance" aria-label="Current balance">
+      <span class="label"><%= balanceLabel %></span>
+      <span class="amount"><%= balanceAmount %></span>
+      <div class="split" aria-label="Current income split">
+        <div class="bar"><i class="a" style="inline-size: <%= pct[0] %>%"></i><i class="b" style="inline-size: <%= pct[1] %>%"></i></div>
+        <div class="legend"><span><%= names[0] %> <%= pct[0] %>%</span><span><%= names[1] %> <%= pct[1] %>%</span></div>
+      </div>
+    </section>
+
+    <% if (snapshotNote) { %><p class="hint"><%= snapshotNote %></p><% } %>
+    <% if (openingNote) { %><p class="hint"><%= openingNote %></p><% } %>
+  </div>
+
+  <div class="dash-side">
+    <% if (setup) { %>
+      <section class="card notice-setup" aria-label="Set up salaries">
+        <p>Set up your <strong>salaries</strong> so expenses split in proportion to income.</p>
+        <a class="btn" href="/incomes">Add salaries</a>
+      </section>
+    <% } %>
+
+    <% if (openingSetup) { %>
+      <section class="card notice-setup" aria-label="Opening balance">
+        <p>Started tracking mid-way? Add the <strong>opening balance</strong> so older debts are counted.</p>
+        <a class="btn secondary" href="/opening-balance">Add opening balance</a>
+      </section>
+    <% } %>
+
+    <div class="stat-row">
+      <div class="stat"><span class="k">Spent this month</span><span class="v"><%= stats.spent %></span></div>
+      <div class="stat"><span class="k">Your share</span><span class="v"><%= stats.mine %></span></div>
+    </div>
+  </div>
+
+  <div class="dash-full">
+    <h2 class="section-title">Recent</h2>
+
+    <% if (empty) { %>
+      <section class="card" aria-label="No expenses yet">
+        <p>No expenses yet.</p>
+        <p class="hint">Add the first shared cost and it will show up here, split by income.</p>
+        <a class="btn" href="/add">Add an expense</a>
+      </section>
+    <% } else { %>
+      <ul class="card expenses">
+        <% expenses.forEach(function (e) { %>
+          <li>
+            <i class="dot <%= e.tone %>" aria-hidden="true"></i>
+            <div class="what">
+              <div class="desc"><%= e.description %></div>
+              <div class="when"><%= e.when %> · <%= e.payer %> paid</div>
+            </div>
+            <div class="amt">
+              <div class="paid"><%= e.paid %></div>
+              <div class="share"><%= e.shareLabel %> <%= e.share %></div>
+            </div>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </div>
+  </div>
+
+</main>
+
+<%- include("_nav", { active: "home" }) %>
+<%- include("_foot", { theme: true }) %>

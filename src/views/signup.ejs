@@ -1,0 +1,31 @@
+<%- include("_head") %>
+<main class="app login">
+  <div class="brand">
+    <div class="wordmark">cuo<em>ta</em></div>
+    <p>Your share, fairly split.</p>
+  </div>
+
+  <% if (typeof error !== "undefined" && error) { %>
+    <p class="notice error" role="alert"><%= error %></p>
+  <% } %>
+
+  <form action="/signup" method="post">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" value="<%= values && values.email ? values.email : "" %>" required>
+    </div>
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" autocomplete="name" placeholder="Your name" value="<%= values && values.name ? values.name : "" %>" required>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="new-password" placeholder="At least 12 characters" minlength="12" required>
+    </div>
+    <button class="btn" type="submit">Create account</button>
+  </form>
+
+  <p class="hint">Sign-up is by invitation only. <a href="/login">Sign in instead</a></p>
+</main>
+<%- include("_foot") %>

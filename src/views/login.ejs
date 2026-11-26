@@ -1,0 +1,33 @@
+<%- include("_head") %>
+<main class="app login">
+  <div class="brand">
+    <div class="wordmark">cuo<em>ta</em></div>
+    <p>Your share, fairly split.</p>
+  </div>
+
+  <% if (typeof error !== "undefined" && error) { %>
+    <p class="notice error" role="alert"><%= error %></p>
+  <% } %>
+
+  <form action="/login" method="post">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" value="<%= values && values.email ? values.email : "" %>" required>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••••••" required>
+    </div>
+    <button class="btn" type="submit">Sign in</button>
+    <div class="divider">or</div>
+    <button class="btn secondary" type="button" id="passkeyLoginButton" disabled>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Z" fill="currentColor"/></svg>
+      Sign in with a passkey
+    </button>
+    <p class="hint" id="passkeyLoginStatus" role="status" aria-live="polite" data-passkey-status>Use Touch ID or your device passcode. Password sign-in always works.</p>
+  </form>
+
+  <p class="hint">Sign-up is by invitation only. <a href="/signup">Create your account</a></p>
+</main>
+<%- include("_foot", { passkey: true }) %>

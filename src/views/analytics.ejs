@@ -1,0 +1,110 @@
+<%- include("_head") %>
+<main class="app">
+
+  <header class="topbar">
+    <div class="wordmark">spending <em>analytics</em></div>
+    <form action="/logout" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn secondary" type="submit">Sign out</button>
+    </form>
+  </header>
+
+  <section class="card analytics-total" aria-labelledby="analytics-total-title">
+    <form class="year-form" action="/analytics" method="get">
+      <label for="year">Year</label>
+      <select id="year" name="year">
+        <% analytics.years.forEach(function (y) { %>
+          <option value="<%= y %>" <%= y === analytics.year ? "selected" : "" %>><%= y %></option>
+        <% }); %>
+      </select>
+      <noscript><button class="btn secondary" type="submit">Show</button></noscript>
+      <span class="year-loading" data-analytics-loading role="status" aria-live="polite" hidden>Loading…</span>
+    </form>
+    <span id="analytics-total-title" class="label">Total spent in <%= analytics.year %></span>
+    <span class="v"><%= analytics.totalFormatted %></span>
+    <p class="hint">
+      <% if (analytics.hasData) { %>
+        <%= analytics.transactionCount %> expense<%= analytics.transactionCount === 1 ? "" : "s" %> in this period, split from the same ledger as the rest of Cuota.
+      <% } else { %>
+        Nothing recorded in this period yet.
+      <% } %>
+    </p>
+  </section>
+
+  <% if (!analytics.hasData) { %>
+
+    <section class="card" aria-label="No spending this period">
+      <p>No expenses recorded in <%= analytics.year %>.</p>
+      <p class="hint">Add a shared cost, or choose another year above.</p>
+      <a class="btn" href="/add">Add an expense</a>
+    </section>
+
+  <% } else { %>
+
+    <div class="analytics-grid">
+
+      <section class="card analytics-trend" aria-labelledby="trend-title">
+        <h2 id="trend-title" class="section-title">Monthly spending</h2>
+        <p class="hint">Bars scale to the busiest month. Months with no expenses stay empty.</p>
+        <div class="chart-months" role="group" aria-label="Monthly spending in <%= analytics.year %>">
+          <% analytics.months.forEach(function (m) { %>
+            <div class="bar-col">
+              <div class="bar-track" aria-hidden="true">
+                <span class="bar-fill<%= m.isZero ? " zero" : "" %>" style="--h: <%= m.heightPct %>%"></span>
+              </div>
+              <span class="visually-hidden"><%= m.longLabel %>: <%= m.isZero ? "no spending" : m.formatted %></span>
+              <span class="bar-month" aria-hidden="true"><%= m.label %></span>
+            </div>
+          <% }); %>
+        </div>
+      </section>
+
+      <section class="card analytics-months" aria-labelledby="top-title">
+        <h2 id="top-title" class="section-title">Most expensive months</h2>
+        <ol class="top-months">
+          <% analytics.topMonths.forEach(function (m) { %>
+            <li>
+              <span class="rank"><%= m.rank %></span>
+              <span class="name"><%= m.longLabel %></span>
+              <span class="amt"><%= m.formatted %></span>
+            </li>
+          <% }); %>
+        </ol>
+      </section>
+
+      <section class="card analytics-cats" aria-labelledby="cat-title">
+        <h2 id="cat-title" class="section-title">By category</h2>
+        <ul class="categories">
+          <% analytics.categories.forEach(function (c) { %>
+            <li class="cat">
+              <div class="row">
+                <span class="name"><%= c.label %></span>
+                <span class="amt"><%= c.formatted %> · <%= c.pct %>%</span>
+              </div>
+              <div class="cat-bar" aria-hidden="true"><i style="inline-size: <%= c.pct %>%"></i></div>
+            </li>
+          <% }); %>
+        </ul>
+      </section>
+
+    </div>
+
+  <% } %>
+
+</main>
+
+<%- include("_nav", { active: "analytics" }) %>
+<script>
+  const yearSelect = document.getElementById("year");
+  const yearLoading = document.querySelector("[data-analytics-loading]");
+  if (yearSelect) {
+    yearSelect.addEventListener("change", function () {
+      // Show the busy indicator, then submit. Deliberately NOT disabling the
+      // select: a disabled form control is excluded from submission, so the
+      // form would navigate without the chosen year.
+      if (yearLoading) yearLoading.hidden = false;
+      yearSelect.form.requestSubmit();
+    });
+  }
+</script>
+<%- include("_foot", { theme: true }) %>

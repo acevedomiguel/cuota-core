@@ -1,0 +1,66 @@
+<%- include("_head") %>
+<main class="app form-page">
+
+  <header class="topbar">
+    <div class="wordmark">opening <em>balance</em></div>
+  </header>
+
+  <% if (opening) { %>
+
+    <section class="card" aria-labelledby="opening-title">
+      <h2 id="opening-title">Carried in</h2>
+      <p class="label"><%= opening.owedBy %> owed <%= opening.owedTo %></p>
+      <p class="amount"><%= opening.amount %></p>
+      <p class="hint">Recorded <%= opening.date %>. It is included in the running balance.</p>
+    </section>
+
+    <form action="/opening-balance/delete" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn secondary" type="submit">Delete and re-enter</button>
+    </form>
+    <p class="hint">Deleting just removes this one figure. Your expenses and salaries stay.</p>
+
+  <% } else { %>
+
+    <p class="hint">Only needed if you were already owed, or already owed, before you started tracking here. It is added to the running balance.</p>
+
+    <form action="/opening-balance" method="post" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="field">
+        <label for="amount">Amount</label>
+        <input class="amount-input" id="amount" name="amount" type="text" inputmode="decimal"
+               placeholder="0.00" value="<%= values.amount %>" autofocus autocomplete="off">
+        <% if (errors.amount) { %><p class="notice error" role="alert"><%= errors.amount %></p><% } %>
+      </div>
+
+      <% if (other) { %>
+        <div class="field">
+          <label id="direction-label">Who owed whom</label>
+          <div class="payer" role="radiogroup" aria-labelledby="direction-label">
+            <label class="llama">
+              <input type="radio" name="direction" value="other-owed-me"
+                     <%= values.direction === "other-owed-me" ? "checked" : "" %>>
+              <i class="dot llama" aria-hidden="true"></i><%= other.name %> owed <%= viewer.name %>
+            </label>
+            <label class="mono">
+              <input type="radio" name="direction" value="i-owed-other"
+                     <%= values.direction === "i-owed-other" ? "checked" : "" %>>
+              <i class="dot mono" aria-hidden="true"></i><%= viewer.name %> owed <%= other.name %>
+            </label>
+          </div>
+          <% if (errors.direction) { %><p class="notice error" role="alert"><%= errors.direction %></p><% } %>
+        </div>
+      <% } else { %>
+        <p class="notice error" role="alert"><%= errors.direction || "The second account has to sign up first." %></p>
+      <% } %>
+
+      <% if (other) { %><button class="btn" type="submit">Save opening balance</button><% } %>
+    </form>
+
+  <% } %>
+
+</main>
+
+<%- include("_nav", { active: active }) %>
+<%- include("_foot", { theme: true }) %>

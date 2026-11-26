@@ -1,0 +1,114 @@
+<%- include("_head") %>
+<main class="app">
+
+  <header class="topbar">
+    <div class="wordmark">new <em>expense</em></div>
+    <div class="period"><%= dateLabel %></div>
+  </header>
+
+  <% if (errors && (errors.amount || errors.description || errors.date || errors.payer)) { %>
+    <p class="notice error" role="alert">Please fix the highlighted field<%= Object.keys(errors).length > 1 ? "s" : "" %>.</p>
+  <% } %>
+
+  <% if (notice) { %>
+    <p class="notice ok" role="status"><%= notice %></p>
+  <% } %>
+
+  <form action="/add" method="post" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="form-grid">
+    <div class="form-fields">
+      <div class="field">
+        <label for="amount">Amount</label>
+        <input class="amount-input" id="amount" name="amount" type="text" inputmode="decimal"
+               placeholder="0.00" value="<%= values.amount %>" autofocus autocomplete="off">
+        <% if (errors.amount) { %><p class="notice error" role="alert"><%= errors.amount %></p><% } %>
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <input id="description" name="description" type="text" list="past" autocomplete="off"
+               placeholder="Groceries, taxi, rent…" value="<%= values.description %>">
+        <datalist id="past">
+          <% descriptions.forEach(function (d) { %><option value="<%= d %>"></option><% }); %>
+        </datalist>
+        <% if (errors.description) { %><p class="notice error" role="alert"><%= errors.description %></p><% } %>
+      </div>
+
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          <% categories.forEach(function (cat) { %>
+            <option value="<%= cat.id %>" <%= values.category === cat.id ? "selected" : "" %>><%= cat.label %></option>
+          <% }); %>
+        </select>
+        <% if (errors.category) { %><p class="notice error" role="alert"><%= errors.category %></p><% } %>
+      </div>
+
+      <div class="field">
+        <label id="payer-label">Paid by</label>
+        <div class="payer" role="radiogroup" aria-labelledby="payer-label">
+          <% bothUsers.forEach(function (u, i) { %>
+            <label class="<%= i === 0 ? "llama" : "mono" %>">
+              <input type="radio" name="payer" value="<%= i === 0 ? "me" : u.id %>"
+                     <%= values.payer === (i === 0 ? "me" : String(u.id)) ? "checked" : "" %>>
+              <i class="dot <%= i === 0 ? "llama" : "mono" %>" aria-hidden="true"></i><%= u.name %>
+            </label>
+          <% }); %>
+        </div>
+        <% if (errors.payer) { %><p class="notice error" role="alert"><%= errors.payer %></p><% } %>
+      </div>
+
+      <div class="field">
+        <label for="date">Date</label>
+        <input id="date" name="date" type="date" value="<%= values.date %>" max="<%= today %>">
+        <% if (errors.date) { %><p class="notice error" role="alert"><%= errors.date %></p><% } %>
+      </div>
+    </div>
+
+    <div class="form-aside">
+      <div class="preview" aria-label="Split preview at current income ratio"
+           data-ratio-a="<%= ratio[0] %>" data-ratio-b="<%= ratio[1] %>" data-lower="<%= lowerIsA ? "a" : "b" %>">
+        <div class="side">
+          <span class="name llama"><%= bothUsers[0] ? bothUsers[0].name : "" %> · <span data-pct-a><%= pct[0] %></span></span>
+          <span class="val" data-share-a><%= preview.a %></span>
+        </div>
+        <div class="side">
+          <span class="name mono"><%= bothUsers[1] ? bothUsers[1].name : "" %> · <span data-pct-b><%= pct[1] %></span></span>
+          <span class="val" data-share-b><%= preview.b %></span>
+        </div>
+      </div>
+      <p class="hint">Split at the income ratio in force now. This stays with this expense.</p>
+
+      <button class="btn" type="submit">Save expense</button>
+    </div>
+    </div>
+  </form>
+
+</main>
+
+<%- include("_nav", { active: active }) %>
+<script type="module">
+  const preview = document.querySelector(".preview");
+  const amount = document.querySelector("#amount");
+  if (preview && amount) {
+    const ratioA = Number(preview.dataset.ratioA);
+    const lowerIsA = preview.dataset.lower === "a";
+    const shareA = preview.querySelector("[data-share-a]");
+    const shareB = preview.querySelector("[data-share-b]");
+    const hkd = (cents) => "HK$ " + Math.floor(cents / 100).toLocaleString("en-US") + "." + String(cents % 100).padStart(2, "0");
+    const draw = () => {
+      const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(amount.value.trim());
+      const cents = match ? Number(match[1]) * 100 + Number((match[2] || "").padEnd(2, "0")) : 0;
+      let a = Math.floor(cents * ratioA);
+      const leftover = cents - a - Math.floor(cents - cents * ratioA);
+      if (leftover > 0 && lowerIsA) a += leftover;
+      shareA.textContent = hkd(cents ? a : 0);
+      shareB.textContent = hkd(cents ? cents - a : 0);
+    };
+    amount.addEventListener("input", draw);
+    draw();
+  }
+</script>
+<%- include("_foot", { theme: true }) %>
