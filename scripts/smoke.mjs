@@ -26,7 +26,7 @@ async function request(path, init = {}) {
 	if (init.body && !headers.has("content-type")) {
 		headers.set("content-type", "application/x-www-form-urlencoded");
 	}
-	const res = await fetch(BASE + path, { ...init, headers, redirect: "manual" });
+	const res = await fetch(BASE + path, { ...init, headers, redirect: init.redirect ?? "manual" });
 	absorb(res);
 	return res;
 }
@@ -74,7 +74,8 @@ async function main() {
 	// sets it up itself. An instance that already has accounts goes through the
 	// ordinary invitation flow, which may refuse an email that already exists —
 	// the login below is what proves the account is usable.
-	let res = await request("/login");
+	// Follow redirects here: a fresh instance 303s this probe to /setup.
+	let res = await request("/login", { redirect: "follow" });
 	let html = await res.text();
 
 	if (html.includes('action="/setup"')) {
