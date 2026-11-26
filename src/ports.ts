@@ -32,6 +32,16 @@ export interface SqlDatabase {
 	 * order must not rely on the clock alone.
 	 */
 	now(): Promise<string>;
+	/**
+	 * Runs `work` atomically on one connection. The argument is a database
+	 * bound to the transaction, so statements inside `work` must use it rather
+	 * than the outer object.
+	 *
+	 * Optional: engines without interactive transactions (a serverless binding,
+	 * for example) omit it, and the migration runner then runs each migration
+	 * plainly. Their schema is managed by the platform's own tooling.
+	 */
+	withTransaction?<T>(work: (db: SqlDatabase) => Promise<T>): Promise<T>;
 }
 
 /** Serves `/static/*`. A Worker binding, a directory, or an in-memory map. */

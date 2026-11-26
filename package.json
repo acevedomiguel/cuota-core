@@ -1,33 +1,61 @@
 {
   "name": "cuota-core",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Runtime-neutral two-person shared expense app with income-proportional splits",
   "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=24"
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
     },
     "./auth": {
-      "types": "./dist/auth.d.ts",
-      "default": "./dist/auth.js"
+      "types": "./dist/src/auth.d.ts",
+      "default": "./dist/src/auth.js"
+    },
+    "./adapters/sqlite": {
+      "types": "./dist/adapters/sqlite.d.ts",
+      "default": "./dist/adapters/sqlite.js"
+    },
+    "./adapters/postgres": {
+      "types": "./dist/adapters/postgres.d.ts",
+      "default": "./dist/adapters/postgres.js"
+    },
+    "./adapters/assets": {
+      "types": "./dist/adapters/assets.d.ts",
+      "default": "./dist/adapters/assets.js"
+    },
+    "./adapters/migration-files": {
+      "types": "./dist/adapters/migration-files.d.ts",
+      "default": "./dist/adapters/migration-files.js"
+    },
+    "./server/env": {
+      "types": "./dist/server/env.d.ts",
+      "default": "./dist/server/env.js"
+    },
+    "./server/database": {
+      "types": "./dist/server/database.d.ts",
+      "default": "./dist/server/database.js"
     }
   },
   "files": [
     "dist",
+    "migrations",
+    "public",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
+    "clean:dist": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "clean:build": "node -e \"require('node:fs').rmSync('build',{recursive:true,force:true})\"",
     "build:views": "node scripts/build-views.ts",
-    "build": "npm run build:views && tsc -p tsconfig.build.json",
-    "build:server": "tsc -p tsconfig.server.json",
+    "build": "npm run clean:dist && npm run build:views && tsc -p tsconfig.build.json",
+    "build:server": "npm run clean:build && tsc -p tsconfig.server.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build:views && vitest run",
     "start": "node build/server/main.js",
@@ -39,12 +67,12 @@
     "@hono/node-server": "^2.1.11",
     "@simplewebauthn/server": "^14.1.0",
     "hono": "^4.13.18",
-    "pg": "^8.23.1"
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "@types/ejs": "^3.1.5",
     "@types/node": "^24.10.1",
-    "@types/pg": "^8.23.1",
+    "@types/pg": "^8.15.6",
     "ejs": "^3.1.10",
     "typescript": "^5.9.3",
     "vitest": "^4.0.6"

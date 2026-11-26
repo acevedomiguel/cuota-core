@@ -32,12 +32,12 @@ const app = createCuotaApp({
 	database: opened.db,
 	config: settings.config,
 	assets: fileAssets(join(process.cwd(), "public")),
-	extend: (host) => {
+	hostRoutes: (host) => {
 		// Before the auth gate, so a probe does not need a session.
 		host.get("/healthz", async (c) => {
 			try {
 				await c.get("db").prepare("SELECT 1 AS ok").first<{ ok: number }>();
-				return c.json({ ok: true, engine: opened.engine, version: settings.config.version });
+				return c.json({ ok: true });
 			} catch {
 				return c.json({ ok: false }, 503);
 			}

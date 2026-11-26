@@ -89,8 +89,10 @@ printf 'a-long-new-password' | npm run reset-password -- you@example.com
 ## Status
 
 The application is extracted behind ports, PostgreSQL persistence is in place,
-and the Node server and Docker image run both database modes. A first-run setup
-wizard is the next piece: today the first account still needs `ALLOWED_EMAILS`.
+and the Node server and Docker image run both database modes. The adapters and
+server helpers are exported, so a consumer can run the app without the repo.
+A first-run setup wizard is the next piece: today the first account still needs
+`ALLOWED_EMAILS`.
 
 ## Requirements
 
@@ -122,10 +124,14 @@ test/        unit and integration tests, plain Node, no network
 
 ## Databases
 
-Two adapters ship here:
+Two adapters ship here and are importable from the published package:
 
-- `adapters/sqlite.ts` — Node's built-in `node:sqlite`, in memory or a file.
-- `adapters/postgres.ts` — `node-postgres`, with optional schema isolation.
+- `cuota-core/adapters/sqlite` — Node.s built-in `node:sqlite`, in memory or a file.
+- `cuota-core/adapters/postgres` — `node-postgres`, pooled, with optional schema isolation.
+- `cuota-core/adapters/assets` and `cuota-core/adapters/migration-files` — the
+  static file handler and migration loader the server uses.
+- `cuota-core/server/env` and `cuota-core/server/database` — the environment
+  loader and `DATABASE_URL` switch, so a host can assemble its own entry.
 
 Migrations are plain SQL: `migrations/` for SQLite, `migrations/postgres/` for
 PostgreSQL. `applyMigrations(db, migrations)` from the package records each
@@ -146,14 +152,16 @@ TEST_DATABASE_URL=postgres://cuota:cuota@localhost:55432/cuota_test npm test
 ## Ports
 
 - `SqlDatabase` — `prepare()` with `bind/first/all/run`, `exec()` for
-  migrations, and `now()` for the database clock. Inserts that need the new id
-  end in `RETURNING id`.
+  migrations, `now()` for the database clock, and an optional
+  `withTransaction()` that the migration runner uses when the engine supports
+  it. Inserts that need the new id end in `RETURNING id`.
 - `AssetHandler` — `fetch(request)` serving `/static/*`.
 - `AppConfig` — allowlist, passkey relying party, optional invoice reading,
   version, and the optional about-page contact block.
 
-`createCuotaApp` also takes an `extend` hook, mounted before the auth gate, for
-host routes such as `/healthz`.
+`createCuotaApp` also takes a `hostRoutes` hook, mounted **before** the auth gate
+for host endpoints such as `/healthz` — everything mounted there is public by
+design.
 
 ## Design rules
 

@@ -77,7 +77,18 @@ describe("snapshots", () => {
 		await createSnapshot(db(), { cutoff: "2026-06-01T00:00:00.000Z", balanceCents: 5000 });
 		await createSnapshot(db(), { cutoff: "2026-11-01T00:00:00.000Z", balanceCents: 12000 });
 		expect((await latestSnapshot(db()))?.balance_cents).toBe(12000);
-		// Same cutoff twice is a conflict, never a silent second row.
-		await expect(createSnapshot(db(), { cutoff: "2026-11-01T00:00:00.000Z", balanceCents: 1 })).rejects.toThrow();
+	});
+
+	it("refreshes the row already sealed at a cutoff instead of adding a second", async () => {
+		// Two writers can compute the same instant. The later recompute wins and
+		// the row stays unique, so a read still folds each range once.
+		await createSnapshot(db(), { cutoff: "2026-11-01T00:00:00.000Z", balanceCents: 1 });
+		expect((await latestSnapshot(db()))?.balance_cents).toBe(1);
+
+		const rows = await db()
+			.prepare("SELECT COUNT(*) AS n FROM snapshots WHERE cutoff = ?")
+			.bind("2026-11-01T00:00:00.000Z")
+			.first<{ n: number }>();
+		expect(Number(rows?.n)).toBe(1);
 	});
 });

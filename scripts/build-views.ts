@@ -18,6 +18,7 @@ const LOCALS = [
 	"categories",
 	"csrfToken",
 	"dateLabel",
+	"deployed",
 	"descriptions",
 	"email",
 	"empty",

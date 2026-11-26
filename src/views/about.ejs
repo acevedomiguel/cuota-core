@@ -18,6 +18,12 @@
         <dt>Version</dt>
         <dd><%= version %></dd>
       </div>
+      <% if (about.deployed) { %>
+      <div>
+        <dt>Deployed</dt>
+        <dd><%= about.deployed.label %> · <%= about.deployed.at %></dd>
+      </div>
+      <% } %>
       <% if (about.builtBy) { %>
       <div>
         <dt>Built by</dt>

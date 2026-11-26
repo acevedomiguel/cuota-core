@@ -27,9 +27,6 @@ const USER_PROMPT = [
 	"Reply with the JSON only: no prose and no code fences.",
 ].join("\n");
 
-/** The config slice this module needs. */
-export interface DeepSeekEnv extends InvoiceReaderConfig {}
-
 export interface ImageInput {
 	bytes: Uint8Array;
 	mimeType: string;

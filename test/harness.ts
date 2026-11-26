@@ -26,7 +26,12 @@ export const testConfig: AppConfig = {
 	passkeys: { rpId: "localhost", origin: "http://localhost", rpName: "Cuota" },
 	invoiceReader: { apiKey: "test-deepseek-key" },
 	version: pkg.version,
-	about: { builtBy: "Example Maintainer", email: "maintainer@example.com", github: "https://github.com/example" },
+	about: {
+		builtBy: "Example Maintainer",
+		email: "maintainer@example.com",
+		github: "https://github.com/example",
+		deployed: { label: "v9.9.9", at: "2026-01-02 03:04 UTC" },
+	},
 };
 
 export const app = createCuotaApp({
