@@ -33,8 +33,9 @@ services:
     ports:
       - "${HOST_PORT:-3000}:3000"
     volumes:
-      # Receipt photos, kept across restarts and redeploys.
-      - cuota-receipts:/app/data/receipts
+      # The app's data directory: receipt photos, and the SQLite file when
+      # DATABASE_URL points at one.
+      - cuota-app-data:/app/data
     depends_on:
       db:
         condition: service_healthy
@@ -55,10 +56,11 @@ services:
     ports:
       - "${HOST_PORT:-3000}:3000"
     volumes:
-      # Receipt photos, and the SQLite file when DATABASE_URL points at one.
-      - cuota-receipts:/app/data/receipts
+      # The app's data directory: receipt photos, and the SQLite file when
+      # DATABASE_URL points at one.
+      - cuota-app-data:/app/data
     restart: unless-stopped
 
 volumes:
   cuota-data:
-  cuota-receipts:
+  cuota-app-data:

@@ -221,7 +221,10 @@ app.post("/add", async (c) => {
 				bytes: new Uint8Array(await photoFile.arrayBuffer()),
 				type: photoFile.type,
 			});
-		} catch {
+		} catch (error) {
+			// Keep the expense, but leave a trace: a failing store should be
+			// visible to the operator, not only to the user.
+			console.error("could not store a receipt for expense", expenseId, error);
 			return c.redirect("/?receipt=unavailable", 303);
 		}
 	}

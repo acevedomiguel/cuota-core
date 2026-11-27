@@ -1,6 +1,10 @@
 import { env, SELF, database, testConfig } from "./harness.js";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import type { Hono } from "hono";
+import { fileReceipts, memoryReceipts } from "../adapters/receipts.js";
 import { createCuotaApp } from "../src/app.js";
 import type { AppEnv } from "../src/app-env.js";
 import type { ReceiptStore, SqlDatabase } from "../src/ports.js";
@@ -242,6 +246,42 @@ describe("when storing the photo fails", () => {
 });
 
 describe("saveReceipt", () => {
+	it("replaces an earlier photo and drops the superseded object", async () => {
+		const store = memoryReceipts();
+		const deletes: string[] = [];
+		const recording: ReceiptStore = {
+			put: (key, body, type) => store.put(key, body, type),
+			get: (key) => store.get(key),
+			delete: async (key) => {
+				deletes.push(key);
+				await store.delete(key);
+			},
+		};
+
+		const session = await signUpAndLogIn("mike@example.com");
+		await addExpense(session, "Replace me");
+		const id = await expenseIdOf("Replace me");
+
+		const keyOf = async () =>
+			(await db()
+				.prepare("SELECT object_key FROM receipts WHERE expense_id = ?")
+				.bind(id)
+				.first<{ object_key: string }>())?.object_key;
+
+		await saveReceipt(database, recording, id, { bytes: new Uint8Array(8), type: "image/png" });
+		const first = await keyOf();
+		expect(first).toBeTruthy();
+
+		await saveReceipt(database, recording, id, { bytes: new Uint8Array(16), type: "image/jpeg" });
+		const second = await keyOf();
+
+		expect(second).not.toBe(first);
+		expect(deletes).toEqual([first]);
+		// The superseded bytes are gone; the new ones are readable.
+		expect(await store.get(first!)).toBeNull();
+		expect((await store.get(second!))?.contentType).toBe("image/jpeg");
+	});
+
 	it("drops the object it just stored when the row cannot be written", async () => {
 		const puts: string[] = [];
 		const deletes: string[] = [];
@@ -279,5 +319,38 @@ describe("saveReceipt", () => {
 
 		expect(puts).toHaveLength(1);
 		expect(deletes).toEqual(puts);
+	});
+});
+
+describe("fileReceipts", () => {
+	it("round-trips an object with its content type, and deletes it", async () => {
+		const dir = await mkdtemp(join(tmpdir(), "cuota-receipts-"));
+		try {
+			const store = fileReceipts(dir);
+
+			await store.put("abc123", new Uint8Array([1, 2, 3]), "image/png");
+			const got = await store.get("abc123");
+			expect(got?.contentType).toBe("image/png");
+			expect(Array.from(got?.body ?? [])).toEqual([1, 2, 3]);
+
+			expect(await store.get("missing")).toBeNull();
+
+			await store.delete("abc123");
+			expect(await store.get("abc123")).toBeNull();
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
+	});
+
+	it("refuses a key that would escape the directory", async () => {
+		const dir = await mkdtemp(join(tmpdir(), "cuota-receipts-"));
+		try {
+			const store = fileReceipts(dir);
+			await expect(store.put("../escape", new Uint8Array([1]), "image/png")).rejects.toThrow(
+				"plain identifier",
+			);
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
 	});
 });
