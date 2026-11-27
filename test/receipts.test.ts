@@ -134,6 +134,7 @@ describe("receipt photos", () => {
 		expect(served.status).toBe(200);
 		expect(served.headers.get("content-type")).toBe("image/png");
 		expect(served.headers.get("cache-control")).toBe("private, no-store");
+		expect(served.headers.get("x-content-type-options")).toBe("nosniff");
 		expect((await served.arrayBuffer()).byteLength).toBe(64);
 	});
 
