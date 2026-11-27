@@ -1,0 +1,27 @@
+src/routes/auth.ts
+  s_3a4bc3529a2444::t_adccf595e35cd9 57-59
+src/db.ts
+  s_3a4bc3529a2444::t_06c690e9c9424b 53-55,61-65,74-79,92-99,102-109
+adapters/sqlite.ts
+  s_3a4bc3529a2444::t_cc2067b8f7a857 48-55,79-91
+test/user-limit-concurrent.test.ts
+  s_3a4bc3529a2444::t_699984e3ae250f 1-38
+src/routes/setup.ts
+  s_3a4bc3529a2444::t_58b16865d01b48 4,78-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "7861899c9f81fa323e23553eeda554f2bbed0d3c",
+  "prompts": {},
+  "sessions": {
+    "s_3a4bc3529a2444": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de5296186ffe2CuNQuN2LhN3il",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
