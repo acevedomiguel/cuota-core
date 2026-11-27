@@ -22,10 +22,11 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/build ./build
 COPY public ./public
 COPY migrations ./migrations
-# SQLite deployments write here; PostgreSQL deployments ignore it.
-RUN mkdir -p /app/data && chown -R node:node /app/data
+# SQLite deployments write here; PostgreSQL deployments keep receipts here.
+RUN mkdir -p /app/data/receipts && chown -R node:node /app/data
 ENV PORT=3000
 ENV DATABASE_URL=file:./data/cuota.db
+ENV RECEIPTS_DIR=./data/receipts
 EXPOSE 3000
 USER node
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

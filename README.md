@@ -24,6 +24,7 @@ const app = createCuotaApp({
 		version: "1.0.0",
 	},
 	assets, // AssetHandler: serves /static/*
+	receipts, // ReceiptStore: optional, keeps receipt photos
 });
 ```
 
@@ -175,6 +176,9 @@ TEST_DATABASE_URL=postgres://cuota:cuota@localhost:55432/cuota_test npm test
   `withTransaction()` that the migration runner uses when the engine supports
   it. Inserts that need the new id end in `RETURNING id`.
 - `AssetHandler` — `fetch(request)` serving `/static/*`.
+- `ReceiptStore` — `put`/`get`/`delete` by opaque key, for receipt photos. It is
+  optional on `createCuotaApp`: a host with no bucket or directory can omit it,
+  and the add form simply hides the photo field.
 - `AppConfig` — allowlist, passkey relying party, optional invoice reading,
   version, and the optional about-page contact block.
 

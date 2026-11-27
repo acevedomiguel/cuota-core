@@ -10,6 +10,8 @@ import type { AboutConfig, AppConfig } from "../src/config.js";
 export interface ServerSettings {
 	port: number;
 	databaseUrl: string;
+	/** Directory the container keeps receipt photos in. */
+	receiptsDir: string;
 	config: AppConfig;
 }
 
@@ -71,6 +73,7 @@ export function loadSettings(env: NodeJS.ProcessEnv = process.env, startedAt: Da
 	return {
 		port: portOf(env.PORT),
 		databaseUrl: env.DATABASE_URL?.trim() || "file:./data/cuota.db",
+		receiptsDir: env.RECEIPTS_DIR?.trim() || "./data/receipts",
 		config,
 	};
 }

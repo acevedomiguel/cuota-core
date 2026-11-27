@@ -48,18 +48,25 @@ export async function saveReceipt(
 	await store.put(key, photo.bytes, photo.type);
 
 	const createdAt = await db.now();
-	await db
-		.prepare(
-			`INSERT INTO receipts (expense_id, object_key, content_type, byte_size, created_at)
-			 VALUES (?, ?, ?, ?, ?)
-			 ON CONFLICT(expense_id) DO UPDATE SET
-			   object_key = excluded.object_key,
-			   content_type = excluded.content_type,
-			   byte_size = excluded.byte_size,
-			   created_at = excluded.created_at`,
-		)
-		.bind(expenseId, key, photo.type, photo.bytes.length, createdAt)
-		.run();
+	try {
+		await db
+			.prepare(
+				`INSERT INTO receipts (expense_id, object_key, content_type, byte_size, created_at)
+				 VALUES (?, ?, ?, ?, ?)
+				 ON CONFLICT(expense_id) DO UPDATE SET
+				   object_key = excluded.object_key,
+				   content_type = excluded.content_type,
+				   byte_size = excluded.byte_size,
+				   created_at = excluded.created_at`,
+			)
+			.bind(expenseId, key, photo.type, photo.bytes.length, createdAt)
+			.run();
+	} catch (error) {
+		// The row was not written, so the object just stored is unreachable:
+		// drop it rather than leave it orphaned, then let the caller decide.
+		await store.delete(key).catch(() => {});
+		throw error;
+	}
 
 	if (previous && previous.object_key !== key) {
 		await store.delete(previous.object_key).catch(() => {});

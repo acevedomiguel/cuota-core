@@ -29,8 +29,12 @@ services:
     environment:
       DATABASE_URL: postgres://cuota:${POSTGRES_PASSWORD:-cuota}@db:5432/cuota
       PORT: 3000
+      RECEIPTS_DIR: /app/data/receipts
     ports:
       - "${HOST_PORT:-3000}:3000"
+    volumes:
+      # Receipt photos, kept across restarts and redeploys.
+      - cuota-receipts:/app/data/receipts
     depends_on:
       db:
         condition: service_healthy
@@ -47,9 +51,14 @@ services:
         required: false
     environment:
       PORT: 3000
+      RECEIPTS_DIR: /app/data/receipts
     ports:
       - "${HOST_PORT:-3000}:3000"
+    volumes:
+      # Receipt photos, and the SQLite file when DATABASE_URL points at one.
+      - cuota-receipts:/app/data/receipts
     restart: unless-stopped
 
 volumes:
   cuota-data:
+  cuota-receipts:

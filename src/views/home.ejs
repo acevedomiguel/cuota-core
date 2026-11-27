@@ -11,6 +11,7 @@
 
   <div class="dash-grid">
   <div class="dash-hero">
+    <% if (receiptWarning) { %><p class="notice error" role="alert"><%= receiptWarning %></p><% } %>
     <section class="card balance" aria-label="Current balance">
       <span class="label"><%= balanceLabel %></span>
       <span class="amount"><%= balanceAmount %></span>

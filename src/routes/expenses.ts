@@ -9,12 +9,21 @@ import { listUsers, type UserRow } from "../db.js";
 import type { AppEnv } from "../app-env.js";
 import { createExpense, listExpenses, listIncomes } from "../ledger.js";
 import type { SqlDatabase } from "../ports.js";
-import { receiptProblem, saveReceipt } from "../receipts.js";
+import { MAX_RECEIPT_BYTES, receiptProblem, saveReceipt } from "../receipts.js";
 import { currentRatio, listSharingRules } from "../sharing.js";
 import { todayInHongKong } from "../time.js";
 import { renderView } from "../views.js";
 
 export const DESCRIPTION_MAX = 120;
+
+/**
+ * What the add form says about a receipt photo. Kept here so the field error
+ * and the pre-parse oversize message stay in step.
+ */
+const RECEIPT_MAX_MB = Math.round(MAX_RECEIPT_BYTES / (1024 * 1024));
+export const PHOTO_TOO_LARGE = `That receipt photo is larger than ${RECEIPT_MAX_MB} MB. Try a smaller one.`;
+export const PHOTO_NOT_AN_IMAGE = "That receipt photo isn't a JPEG, PNG, GIF, or WebP image.";
+export const PHOTO_NO_STORE = "Receipt photos aren't available on this deployment. Save the expense without one.";
 
 export interface ExpenseInput {
 	date: string;
@@ -122,6 +131,8 @@ export function viewLocals(
 	values: Record<string, string>,
 	errors: Record<string, string>,
 	notice = "",
+	/** Whether this host can keep a receipt photo; the field is hidden if not. */
+	receipts = false,
 ) {
 	return {
 		title: "Add expense",
@@ -129,6 +140,7 @@ export function viewLocals(
 		active: "add",
 		csrfToken,
 		notice,
+		receipts,
 		bothUsers: form.users.map((u) => ({ id: u.id, name: u.name })),
 		ratio: [form.ratio.a, form.ratio.b],
 		pct: form.pct,
@@ -150,7 +162,13 @@ app.get("/add", async (c) => {
 	if (!user) return c.redirect("/login", 303);
 	const form = await formLocals(c.get("db"), user.id);
 	const values = { amount: "", description: "", payer: "me", date: form.today, category: UNCATEGORIZED };
-	return c.html(renderView("add", viewLocals(form, c.get("csrfToken"), values, {})));
+	// The pre-parse body cap (see app.ts) sends an oversized upload back here,
+	// where the form can say why instead of the request failing outright.
+	const errors: Record<string, string> =
+		c.req.query("photo") === "too-large" ? { photo: PHOTO_TOO_LARGE } : {};
+	return c.html(
+		renderView("add", viewLocals(form, c.get("csrfToken"), values, errors, "", Boolean(c.get("receipts")))),
+	);
 });
 
 app.post("/add", async (c) => {
@@ -159,6 +177,7 @@ app.post("/add", async (c) => {
 	const body = await c.req.parseBody();
 	const form = await formLocals(c.get("db"), user.id);
 	const result = parseExpenseForm(body, form.users, form.today);
+	const store = c.get("receipts");
 
 	const values = {
 		amount: String(body.amount ?? ""),
@@ -169,33 +188,42 @@ app.post("/add", async (c) => {
 	};
 
 	// The optional receipt photo rides along with the same form. It is validated
-	// before the expense is written, so a bad file never creates a half entry.
+	// before the expense is written, so a bad file never creates a half entry. A
+	// photo the host cannot store is refused too, rather than silently dropped.
 	const photo = body.photo;
 	let photoFile: File | null = null;
 	let photoError = "";
 	if (photo instanceof File && photo.size > 0) {
 		const problem = receiptProblem(photo);
-		if (problem === "type") photoError = "That receipt photo isn't a JPEG, PNG, GIF, or WebP image.";
-		else if (problem === "size") photoError = "That receipt photo is too large. Try a smaller one.";
+		if (problem === "type") photoError = PHOTO_NOT_AN_IMAGE;
+		else if (problem === "size") photoError = PHOTO_TOO_LARGE;
+		else if (!store) photoError = PHOTO_NO_STORE;
 		else photoFile = photo;
 	}
 
 	if (!result.ok || photoError !== "") {
 		const base = result.ok ? {} : result.errors;
 		const errors = photoError === "" ? base : { ...base, photo: photoError };
-		return c.html(renderView("add", viewLocals(form, c.get("csrfToken"), values, errors)), 422);
+		return c.html(
+			renderView("add", viewLocals(form, c.get("csrfToken"), values, errors, "", Boolean(store))),
+			422,
+		);
 	}
 
 	const expenseId = await createExpense(c.get("db"), result.value);
 
-	// A photo with nowhere to go is dropped rather than failing the save: the
-	// expense is the point, and the store is an optional host capability.
-	const store = c.get("receipts");
+	// The expense is the point; the photo is a bonus. If storing it fails, keep
+	// the expense and say so on the home page, rather than failing the request
+	// and inviting a retry that would record the same cost twice.
 	if (photoFile && store) {
-		await saveReceipt(c.get("db"), store, expenseId, {
-			bytes: new Uint8Array(await photoFile.arrayBuffer()),
-			type: photoFile.type,
-		});
+		try {
+			await saveReceipt(c.get("db"), store, expenseId, {
+				bytes: new Uint8Array(await photoFile.arrayBuffer()),
+				type: photoFile.type,
+			});
+		} catch {
+			return c.redirect("/?receipt=unavailable", 303);
+		}
 	}
 	return c.redirect("/", 303);
 });

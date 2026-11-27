@@ -81,11 +81,13 @@
       </div>
       <p class="hint">Split at the income ratio in force now. This stays with this expense.</p>
 
-      <div class="field">
-        <label for="photo">Receipt photo <span class="hint">(optional)</span></label>
-        <input id="photo" name="photo" type="file" accept="image/*" capture="environment">
-        <% if (errors.photo) { %><p class="notice error" role="alert"><%= errors.photo %></p><% } %>
-      </div>
+      <% if (receipts) { %>
+        <div class="field">
+          <label for="photo">Receipt photo <span class="hint">(optional)</span></label>
+          <input id="photo" name="photo" type="file" accept="image/*" capture="environment">
+        </div>
+      <% } %>
+      <% if (errors.photo) { %><p class="notice error" role="alert"><%= errors.photo %></p><% } %>
 
       <button class="btn" type="submit">Save expense</button>
     </div>
