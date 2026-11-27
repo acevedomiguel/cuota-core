@@ -723,7 +723,11 @@ about = __locals.about,
     ;  } else { 
     ; __append("\n        Nothing recorded in this period yet.\n      ")
     ;  } 
-    ; __append("\n    </p>\n  </section>\n\n  ")
+    ; __append("\n    </p>\n  </section>\n\n  <section class=\"card export-card\" aria-labelledby=\"export-title\">\n    <h2 id=\"export-title\" class=\"section-title\">Export</h2>\n    <p class=\"hint\">Download the ledger as a CSV for a range of dates. Both ends are included.</p>\n    <form class=\"year-form\" action=\"/export\" method=\"get\">\n      <label for=\"from\">From</label>\n      <input id=\"from\" name=\"from\" type=\"date\" value=\"")
+    ; __append(escapeFn( analytics.year ))
+    ; __append("-01-01\">\n      <label for=\"to\">To</label>\n      <input id=\"to\" name=\"to\" type=\"date\" value=\"")
+    ; __append(escapeFn( analytics.year ))
+    ; __append("-12-31\">\n      <button class=\"btn secondary\" type=\"submit\">Download CSV</button>\n    </form>\n  </section>\n\n  ")
     ;  if (!analytics.hasData) { 
     ; __append("\n\n    <section class=\"card\" aria-label=\"No spending this period\">\n      <p>No expenses recorded in ")
     ; __append(escapeFn( analytics.year ))
