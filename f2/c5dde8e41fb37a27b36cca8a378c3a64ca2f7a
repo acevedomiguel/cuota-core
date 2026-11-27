@@ -1,0 +1,21 @@
+test/receipts.test.ts
+  s_3a4bc3529a2444::t_a9f6f04c3c3352 137
+src/routes/receipts.ts
+  s_3a4bc3529a2444::t_ea2299c15c9af4 44-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "f2c5dde8e41fb37a27b36cca8a378c3a64ca2f7a",
+  "prompts": {},
+  "sessions": {
+    "s_3a4bc3529a2444": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de5296186ffe2CuNQuN2LhN3il",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
