@@ -1,0 +1,40 @@
+src/app.ts
+  s_3a4bc3529a2444::t_a49992371648cf 160-161,165-166
+  s_3a4bc3529a2444::t_31fd846b51cd40 54
+  s_3a4bc3529a2444::t_83dbe45e4e2395 36-41
+  s_3a4bc3529a2444::t_5a683ee256540e 8
+  s_3a4bc3529a2444::t_488794219de971 156-159,162-164
+README.md
+  s_3a4bc3529a2444::t_c3ab60e887d4b3 181-184
+src/home.ts
+  s_3a4bc3529a2444::t_fff98d54d893b6 132
+  s_3a4bc3529a2444::t_b0fb0ae8cec1f6 71-76
+src/index.ts
+  s_3a4bc3529a2444::t_24a62d783d86e7 19
+src/receipts.ts
+  s_3a4bc3529a2444::t_7c51dee8b5c857 113,115-119,121-123
+  s_3a4bc3529a2444::t_f6df2b7d9d53c0 6
+  s_3a4bc3529a2444::t_8bb8a633de9b90 20-29
+  s_3a4bc3529a2444::t_4dac23bdf7d785 86-96,99-103,105-106
+  s_3a4bc3529a2444::t_515ba56feb1f6e 112
+test/receipts.test.ts
+  s_3a4bc3529a2444::t_864a9ef27cbcc7 11-17
+  s_3a4bc3529a2444::t_216fdc8d7a7611 373,375-384,386-387,389,391-400,402-404,407,410-411,413-415
+  s_3a4bc3529a2444::t_1ee55033e3e787 348,364,368-370
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "529bb4e676c9a475d4a524acff6397493fc4c05f",
+  "prompts": {},
+  "sessions": {
+    "s_3a4bc3529a2444": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de5296186ffe2CuNQuN2LhN3il",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
