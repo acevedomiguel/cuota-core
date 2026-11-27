@@ -1,0 +1,41 @@
+src/ledger.ts
+  s_3a4bc3529a2444::t_8e00143600c41c 7
+  s_3a4bc3529a2444::t_9aff342eaa58fb 90-116
+  s_3a4bc3529a2444::t_ac089de9a7fbbb 88-89
+test/csv.test.ts
+  s_3a4bc3529a2444::t_bea38f943a5b3a 1-51
+src/routes/export.ts
+  s_3a4bc3529a2444::t_7f47d0dfc54d1d 16-20,22-24
+  s_3a4bc3529a2444::t_a62ad0b20207bb 1-15,21,25-75
+test/export.test.ts
+  s_3a4bc3529a2444::t_204d315969fbca 104
+  s_3a4bc3529a2444::t_2de80bfbbfb12e 36-38
+  s_3a4bc3529a2444::t_2d5fe5620f9162 1-35,39-103,105-106
+src/app.ts
+  s_3a4bc3529a2444::t_679382698be124 16
+  s_3a4bc3529a2444::t_61d1e86bf8fde8 195
+src/views/analytics.ejs
+  s_3a4bc3529a2444::t_ad6512278a8a01 34-45
+src/csv.ts
+  s_3a4bc3529a2444::t_311c2a793ed5f9 33-35
+  s_3a4bc3529a2444::t_e9ea926640ae26 1-22,26-32,36
+  s_3a4bc3529a2444::t_6e2650682fdd20 23-25
+src/views-compiled.ts
+  s_3a4bc3529a2444::t_e451cae3173ae2 726-730
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "606022e79d83d0c47b4ffe9795a2411dd62241b4",
+  "prompts": {},
+  "sessions": {
+    "s_3a4bc3529a2444": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de5296186ffe2CuNQuN2LhN3il",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
