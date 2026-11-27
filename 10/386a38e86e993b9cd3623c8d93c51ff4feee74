@@ -1,0 +1,23 @@
+server/env.ts
+  s_3a4bc3529a2444::t_568d7fd710b5f0 1,31-40,48-58,66,68,76
+server/main.ts
+  s_3a4bc3529a2444::t_6e389fe32bd6be 16
+test/env.test.ts
+  s_3a4bc3529a2444::t_f3b1f493f610a4 1-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "10386a38e86e993b9cd3623c8d93c51ff4feee74",
+  "prompts": {},
+  "sessions": {
+    "s_3a4bc3529a2444": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de5296186ffe2CuNQuN2LhN3il",
+        "model": "k3.1-pro"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
