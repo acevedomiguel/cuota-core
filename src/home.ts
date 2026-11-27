@@ -68,7 +68,12 @@ function shortDate(iso: string): string {
 	return `${MONTHS[Number(month) - 1]} ${Number(day)}`;
 }
 
-export async function buildHome(db: SqlDatabase, viewerId: number): Promise<HomeView> {
+export async function buildHome(
+	db: SqlDatabase,
+	viewerId: number,
+	/** When set, a receipt older than this instant is not linked. */
+	receiptsNotBefore?: string,
+): Promise<HomeView> {
 	const users = await listUsers(db);
 	const [first, second] = users;
 	const [incomes, allExpenses, snapshot, balance, opening, rules] = await Promise.all([
@@ -124,6 +129,7 @@ export async function buildHome(db: SqlDatabase, viewerId: number): Promise<Home
 	const withReceipts = await expensesWithReceipts(
 		db,
 		recentExpenses.map((e) => e.id),
+		receiptsNotBefore,
 	);
 
 	const recent = recentExpenses.map<ExpenseView>((e) => {
