@@ -44,6 +44,7 @@ const LOCALS = [
 	"ratio",
 	"recent",
 	"setup",
+	"sharing",
 	"snapshotNote",
 	"stats",
 	"theme",

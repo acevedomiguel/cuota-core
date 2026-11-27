@@ -48,6 +48,60 @@
     <p class="hint">The new salary applies to expenses added from now on. Past records keep their split.</p>
   </form>
 
+  <section class="card" aria-labelledby="sharing-title">
+    <h2 id="sharing-title">How you split</h2>
+    <p class="hint">In force now: <strong><%= sharing.summary %></strong></p>
+
+    <form action="/incomes/sharing" method="post" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="mode" value="fixed">
+
+      <div class="field">
+        <label for="percentage">Fixed percentage</label>
+        <input class="amount-input" id="percentage" name="percentage" type="text" inputmode="decimal"
+               placeholder="50" value="<%= sharing.values.percentage || sharing.percentage %>" autocomplete="off">
+        <% if (errors.percentage) { %><p class="notice error" role="alert"><%= errors.percentage %></p><% } %>
+      </div>
+
+      <div class="field">
+        <label id="subject-label">Whose share</label>
+        <div class="payer" role="radiogroup" aria-labelledby="subject-label">
+          <% bothUsers.forEach(function (u, i) { %>
+            <label class="<%= i === 0 ? "llama" : "mono" %>">
+              <input type="radio" name="subjectUserId" value="<%= u.id %>"
+                     <%= String(sharing.values.subjectUserId || sharing.subjectUserId) === String(u.id) ? "checked" : "" %>>
+              <i class="dot <%= i === 0 ? "llama" : "mono" %>" aria-hidden="true"></i><%= u.name %>
+            </label>
+          <% }); %>
+        </div>
+        <% if (errors.subjectUserId) { %><p class="notice error" role="alert"><%= errors.subjectUserId %></p><% } %>
+      </div>
+
+      <button class="btn" type="submit">Use this percentage</button>
+      <p class="hint">The other partner pays the rest. Applies to expenses added from now on; past records keep their split.</p>
+    </form>
+
+    <% if (sharing.mode === "fixed") { %>
+      <form action="/incomes/sharing" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="mode" value="salary">
+        <button class="btn secondary" type="submit">Back to salary ratio</button>
+      </form>
+    <% } %>
+
+    <% if (sharing.entries.length > 0) { %>
+      <ul class="history">
+        <% sharing.entries.forEach(function (entry, i) { %>
+          <li>
+            <span class="when"><%= entry.when %></span>
+            <span class="amt"><%= entry.label %></span>
+            <% if (i === 0) { %><span class="pill-tag">current</span><% } %>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+
   <% incomes.forEach(function (group) { %>
     <section class="card" aria-label="<%= group.name %>'s salary history">
       <h2><i class="dot <%= group.tone %>" aria-hidden="true"></i><%= group.name %></h2>

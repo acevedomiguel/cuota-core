@@ -3,12 +3,13 @@
 // be pinned without a request.
 
 import { Hono } from "hono";
-import { formatHKD, parseAmountToCents, ratioAt, sharesForExpense } from "../calc.js";
+import { formatHKD, parseAmountToCents, sharesForExpense } from "../calc.js";
 import { CATEGORY_OPTIONS, UNCATEGORIZED, isValidCategory } from "../categories.js";
 import { listUsers, type UserRow } from "../db.js";
 import type { AppEnv } from "../app-env.js";
 import { createExpense, listExpenses, listIncomes } from "../ledger.js";
 import type { SqlDatabase } from "../ports.js";
+import { currentRatio, listSharingRules } from "../sharing.js";
 import { todayInHongKong } from "../time.js";
 import { renderView } from "../views.js";
 
@@ -87,14 +88,13 @@ function dateLabel(iso: string): string {
  * the exact ratio this expense will be frozen with.
  */
 export async function formLocals(db: SqlDatabase, signedInId: number) {
-	const [users, incomes, recent] = await Promise.all([
+	const [users, incomes, recent, rules] = await Promise.all([
 		orderedUsers(db, signedInId),
 		listIncomes(db),
 		listExpenses(db, 50),
+		listSharingRules(db),
 	]);
-	const salary = (userId: number | undefined) =>
-		userId === undefined ? 0 : (incomes.filter((i) => i.user_id === userId).at(-1)?.amount_cents ?? 0);
-	const ratio = ratioAt(salary(users[0]?.id), salary(users[1]?.id));
+	const ratio = currentRatio(incomes, rules, users[0]?.id ?? 0, users[1]?.id ?? 0);
 	const lowerId = (users[0]?.id ?? 0) < (users[1]?.id ?? 0);
 	const preview = (amountCents: number) => {
 		const { a, b } = sharesForExpense(amountCents, ratio.a, lowerId);

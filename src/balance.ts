@@ -18,26 +18,11 @@ import {
 	listIncomes,
 	netBalanceEvents,
 	type ExpenseRow,
-	type IncomeRow,
 } from "./ledger.js";
+import { listSharingRules, sharingResolver } from "./sharing.js";
 
 function toCalc(rows: ExpenseRow[]): CalcExpense[] {
 	return rows.map((r) => ({ amountCents: r.amount_cents, payerId: r.payer_id, createdAt: r.created_at }));
-}
-
-/**
- * A synchronous salary resolver over the whole timeline (listIncomes is
- * created_at ASC, so the latest match wins). Building it once avoids a query
- * per expense in the fold.
- */
-function salaryResolver(incomes: IncomeRow[]): (userId: number, asOf: string) => number {
-	return (userId, asOf) => {
-		let value = 0;
-		for (const row of incomes) {
-			if (row.user_id === userId && row.created_at <= asOf) value = row.amount_cents;
-		}
-		return value;
-	};
 }
 
 /** The database's clock, in the same millisecond ISO format as every row. */
@@ -53,9 +38,13 @@ async function dbNow(db: SqlDatabase): Promise<string> {
 export async function currentBalance(db: SqlDatabase, userA: number, userB: number): Promise<number> {
 	const snapshot = await latestSnapshot(db);
 	const cutoff = snapshot?.cutoff ?? "";
-	const [expenses, incomes] = await Promise.all([listExpensesSince(db, cutoff), listIncomes(db)]);
+	const [expenses, incomes, rules] = await Promise.all([
+		listExpensesSince(db, cutoff),
+		listIncomes(db),
+		listSharingRules(db),
+	]);
 	const events = await netBalanceEvents(db, userA, userB, cutoff || undefined);
-	const live = balanceCents(toCalc(expenses), salaryResolver(incomes), userA, userB, events);
+	const live = balanceCents(toCalc(expenses), sharingResolver(incomes, rules, userA, userB), userA, userB, events);
 	return (snapshot?.balance_cents ?? 0) + live;
 }
 
@@ -83,10 +72,14 @@ async function nextCutoff(db: SqlDatabase): Promise<string> {
  */
 export async function refreshSnapshot(db: SqlDatabase, userA: number, userB: number): Promise<void> {
 	const cutoff = await nextCutoff(db);
-	const [all, incomes] = await Promise.all([listExpensesSince(db, ""), listIncomes(db)]);
+	const [all, incomes, rules] = await Promise.all([
+		listExpensesSince(db, ""),
+		listIncomes(db),
+		listSharingRules(db),
+	]);
 	const sealed = all.filter((e) => e.created_at < cutoff);
 	const allEvents = await netBalanceEvents(db, userA, userB);
 	const eventsSince = await netBalanceEvents(db, userA, userB, cutoff);
-	const balance = balanceCents(toCalc(sealed), salaryResolver(incomes), userA, userB, allEvents - eventsSince);
+	const balance = balanceCents(toCalc(sealed), sharingResolver(incomes, rules, userA, userB), userA, userB, allEvents - eventsSince);
 	await createSnapshot(db, { cutoff, balanceCents: balance });
 }

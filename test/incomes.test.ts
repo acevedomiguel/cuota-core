@@ -172,3 +172,44 @@ describe("freeze-at-entry semantics end to end", () => {
 		expect((await latestSnapshot(db()))?.balance_cents).toBe(await fullNow());
 	});
 });
+
+describe("sharing rule", () => {
+	it("stores a fixed percentage, shows it, and switches back to salaries", async () => {
+		const session = await signUpAndLogIn("mike@example.com");
+		await signUpAndLogIn("richel@example.com");
+		const mike = (await getUserByEmail(db(), "mike@example.com"))!.id;
+
+		const before = await getPage(session, "/incomes");
+		expect(before).toContain("How you split");
+		expect(before).toContain("Salary ratio");
+
+		await refreshCsrf(session, "/incomes");
+		const saved = await postForm(
+			"/incomes/sharing",
+			{ mode: "fixed", subjectUserId: String(mike), percentage: "62.5" },
+			session,
+		);
+		expect(saved.status).toBe(303);
+
+		const after = await getPage(session, "/incomes");
+		expect(after).toContain("62.5% to");
+		// The switch-back control only exists while a fixed rule is in force.
+		expect(after).toContain("Back to salary ratio");
+
+		// A bad percentage is refused without recording a rule.
+		await refreshCsrf(session, "/incomes");
+		const rejected = await postForm(
+			"/incomes/sharing",
+			{ mode: "fixed", subjectUserId: String(mike), percentage: "150" },
+			session,
+		);
+		expect(rejected.status).toBe(422);
+		expect(await rejected.text()).toContain("between 0 and 100");
+
+		await refreshCsrf(session, "/incomes");
+		const back = await postForm("/incomes/sharing", { mode: "salary" }, session);
+		expect(back.status).toBe(303);
+		const salaries = await getPage(session, "/incomes");
+		expect(salaries).not.toContain("Back to salary ratio");
+	});
+});
