@@ -5,7 +5,7 @@ import { currentUser, ensureCsrfToken, validCsrfToken } from "./auth.js";
 import { userCount } from "./setup.js";
 import type { AppConfig } from "./config.js";
 import { buildHome } from "./home.js";
-import { pruneReceipts, receiptCutoff } from "./receipts.js";
+import { pruneReceipts, receiptCutoff, retentionEnabled } from "./receipts.js";
 import type { AssetHandler, ReceiptStore, SqlDatabase } from "./ports.js";
 import { renderView } from "./views.js";
 import { sessionMiddleware } from "./session.js";
@@ -59,6 +59,7 @@ export function createCuotaApp({ database, config, assets, receipts, receiptRete
 		c.set("config", config);
 		c.set("assets", assets);
 		c.set("receipts", receipts);
+		c.set("receiptRetentionDays", receiptRetentionDays);
 		await next();
 	});
 
@@ -156,11 +157,16 @@ export function createCuotaApp({ database, config, assets, receipts, receiptRete
 		// Receipts past the retention window are swept as the list is drawn: one
 		// best-effort statement, so a failure never breaks the page. The same
 		// cutoff hides them even if the delete did not run, and the store's own
-		// rule (a bucket lifecycle, say) expires the bytes.
-		const receiptsNotBefore =
-			receiptRetentionDays && receiptRetentionDays > 0 ? receiptCutoff(receiptRetentionDays) : undefined;
-		if (receiptsNotBefore && c.get("receipts")) {
-			await pruneReceipts(c.get("db"), receiptsNotBefore).catch(() => {});
+		// rule (a bucket lifecycle, say) expires the bytes. The cutoff comes from
+		// the database clock, like every other timestamp.
+		let receiptsNotBefore: string | undefined;
+		if (retentionEnabled(receiptRetentionDays)) {
+			receiptsNotBefore = receiptCutoff(receiptRetentionDays, new Date(await c.get("db").now()));
+			if (c.get("receipts")) {
+				await pruneReceipts(c.get("db"), receiptsNotBefore).catch((error) => {
+					console.warn("could not sweep expired receipts", error);
+				});
+			}
 		}
 
 		const view = await buildHome(c.get("db"), user.id, receiptsNotBefore);

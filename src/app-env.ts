@@ -13,6 +13,8 @@ export interface AppEnv {
 		assets: AssetHandler;
 		/** Absent when the host stores no receipts. */
 		receipts?: ReceiptStore;
+		/** Set when the host gave a retention window; see `receiptCutoff`. */
+		receiptRetentionDays?: number;
 		session: Session;
 		csrfToken: string;
 		/** Set by the auth gate after verifying the session row. */

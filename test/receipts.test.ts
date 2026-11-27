@@ -10,8 +10,10 @@ import type { AppEnv } from "../src/app-env.js";
 import type { ReceiptStore, SqlDatabase } from "../src/ports.js";
 import {
 	MAX_RECEIPT_BYTES,
+	MAX_RETENTION_DAYS,
 	expensesWithReceipts,
 	pruneReceipts,
+	receiptCutoff,
 	receiptProblem,
 	saveReceipt,
 } from "../src/receipts.js";
@@ -388,16 +390,31 @@ describe("expensesWithReceipts", () => {
 	});
 });
 
+describe("receiptCutoff", () => {
+	it("returns an ISO instant a window before now", () => {
+		expect(receiptCutoff(90, new Date("2026-11-27T00:00:00.000Z"))).toBe("2026-08-29T00:00:00.000Z");
+	});
+
+	it("treats a wild window as keep-forever instead of throwing", () => {
+		const now = new Date("2026-11-27T00:00:00.000Z");
+		const forever = receiptCutoff(MAX_RETENTION_DAYS, now);
+		expect(receiptCutoff(Number.POSITIVE_INFINITY, now)).toBe(forever);
+		expect(receiptCutoff(Number.NaN, now)).toBe(forever);
+		expect(receiptCutoff(0, now)).toBe(forever);
+	});
+});
+
 describe("a receipt retention window", () => {
+	const store = memoryReceipts();
 	const expiring = createCuotaApp({
 		database,
 		config: testConfig,
 		assets: { fetch: () => new Response("asset") },
-		receipts: memoryReceipts(),
+		receipts: store,
 		receiptRetentionDays: 90,
 	});
 
-	it("stops linking a receipt past the window, and links a fresh one", async () => {
+	it("stops linking an aged receipt and sweeps its row as the list is drawn", async () => {
 		const session = await signUpAndLogIn("mike@example.com");
 
 		await addExpense(session, "Aged link", photoFile());
@@ -413,6 +430,31 @@ describe("a receipt retention window", () => {
 		const html = await withApp(expiring, session, "/", {}).then((r) => r.text());
 		expect(html).not.toContain(`/expenses/${aged}/photo`);
 		expect(html).toContain(`/expenses/${fresh}/photo`);
+
+		// Drawing the page swept the aged row, leaving the fresh one.
+		expect(await receiptCount(aged)).toBe(0);
+		expect(await receiptCount(fresh)).toBe(1);
+	});
+
+	it("does not serve a photo past the window, even before the sweep", async () => {
+		const session = await signUpAndLogIn("mike@example.com");
+
+		await addExpense(session, "Aged route", photoFile());
+		const aged = await expenseIdOf("Aged route");
+		await saveReceipt(database, store, aged, { bytes: new Uint8Array(8), type: "image/png" });
+		await db()
+			.prepare("UPDATE receipts SET created_at = ? WHERE expense_id = ?")
+			.bind("2020-01-01T00:00:00.000Z", aged)
+			.run();
+
+		await addExpense(session, "Fresh route", photoFile());
+		const fresh = await expenseIdOf("Fresh route");
+		await saveReceipt(database, store, fresh, { bytes: new Uint8Array(8), type: "image/png" });
+
+		// No home render in between, so the row is still there: the window alone
+		// is what refuses the aged photo.
+		expect((await withApp(expiring, session, `/expenses/${aged}/photo`, {})).status).toBe(404);
+		expect((await withApp(expiring, session, `/expenses/${fresh}/photo`, {})).status).toBe(200);
 	});
 });
 

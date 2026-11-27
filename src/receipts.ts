@@ -19,12 +19,25 @@ export const MAX_RECEIPT_BYTES = MAX_IMAGE_BYTES;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/** A sanity ceiling on a retention window (100 years), so a wild value cannot
+ * produce an out-of-range date. */
+export const MAX_RETENTION_DAYS = 36_500;
+
 /**
  * The instant before which a receipt counts as expired, for a window of `days`.
- * Shared so the list filter and any host-side sweep agree on the boundary.
+ * Shared so the list filter, the sweep, and the serve route agree on the
+ * boundary. A window that is not a sane positive number means "keep forever":
+ * the cutoff goes as far back as it can, so a wild value expires nothing rather
+ * than everything.
  */
 export function receiptCutoff(days: number, now: Date = new Date()): string {
-	return new Date(now.getTime() - days * DAY_MS).toISOString();
+	const bounded = Number.isFinite(days) && days > 0 ? Math.min(days, MAX_RETENTION_DAYS) : MAX_RETENTION_DAYS;
+	return new Date(now.getTime() - bounded * DAY_MS).toISOString();
+}
+
+/** True when a retention window is set and usable. */
+export function retentionEnabled(days: number | undefined): days is number {
+	return days !== undefined && Number.isFinite(days) && days > 0;
 }
 
 /** Why a chosen photo cannot be kept, or null when it is acceptable. */
@@ -112,9 +125,9 @@ export async function expensesWithReceipts(
  * Deletes receipts created before `cutoff` (an ISO instant, compared as text
  * like every other timestamp) and returns how many rows went.
  *
- * One statement, and it touches rows only: the bytes are the store's own
- * business — a bucket lifecycle rule expires them on the same window, a
- * directory host prunes its own files. Nothing is selected first, so a receipt
+ * One statement, and it touches rows only: expiring the bytes is the store's own
+ * business — an R2 lifecycle rule on the same window, say. A host that keeps
+ * files on disk must prune them itself. Nothing is selected first, so a receipt
  * re-uploaded at the last moment (its `created_at` moved to now) is never in
  * scope.
  */
