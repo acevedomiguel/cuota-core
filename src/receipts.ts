@@ -95,17 +95,33 @@ export async function receiptsBefore(db: SqlDatabase, cutoff: string): Promise<R
 
 /**
  * Deletes every receipt created before `cutoff` (an ISO instant, compared as
- * text like every other timestamp): the stored object first, then the row.
- * Dropping the object is best-effort — if the store is down the row still goes,
- * so the home list stops advertising a photo nobody can open, and a host-side
- * lifecycle rule can sweep the leftover bytes. Removing a missing object or row
- * is a no-op, so a rerun is safe. Returns how many rows were removed.
+ * text like every other timestamp), returning how many rows were removed.
+ *
+ * Each row is deleted by its exact `(expense_id, object_key)` pair, so a receipt
+ * re-uploaded since the select — which keeps the expense id but gets a new key —
+ * is left alone. The row goes before its object: a failure then leaves at worst
+ * an invisible object for a host lifecycle rule to sweep, never a row pointing
+ * at bytes that are gone. Removing a missing row or object is a no-op, so a
+ * rerun is safe.
  */
 export async function pruneReceipts(db: SqlDatabase, store: ReceiptStore, cutoff: string): Promise<number> {
 	const expired = await receiptsBefore(db, cutoff);
+	let removed = 0;
+
 	for (const receipt of expired) {
-		await store.delete(receipt.object_key).catch(() => {});
-		await db.prepare("DELETE FROM receipts WHERE expense_id = ?").bind(receipt.expense_id).run();
+		const { meta } = await db
+			.prepare("DELETE FROM receipts WHERE expense_id = ? AND object_key = ?")
+			.bind(receipt.expense_id, receipt.object_key)
+			.run();
+		if (meta.changes === 0) continue;
+		removed += meta.changes;
+
+		await store.delete(receipt.object_key).catch((error) => {
+			// The row is gone, so this object is now invisible to the app; a host
+			// lifecycle rule is the backstop. Log it so the leak is visible.
+			console.warn("could not delete a pruned receipt object", receipt.object_key, error);
+		});
 	}
-	return expired.length;
+
+	return removed;
 }

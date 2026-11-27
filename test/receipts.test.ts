@@ -9,6 +9,7 @@ import { createCuotaApp } from "../src/app.js";
 import type { AppEnv } from "../src/app-env.js";
 import type { ReceiptStore, SqlDatabase } from "../src/ports.js";
 import { MAX_RECEIPT_BYTES, pruneReceipts, receiptProblem, saveReceipt } from "../src/receipts.js";
+import type { ReceiptRow } from "../src/receipts.js";
 import { MAX_UPLOAD_BYTES } from "../src/routes/scan.js";
 import { getPage, initDb, postMultipart, refreshCsrf, signUpAndLogIn, type FormSession } from "./helpers.js";
 
@@ -345,9 +346,14 @@ describe("pruneReceipts", () => {
 
 		const old = await withReceipt(session, "Old receipt", store);
 		const fresh = await withReceipt(session, "Fresh receipt", store);
+		// Pin both instants so the result does not depend on the machine clock.
 		await db()
 			.prepare("UPDATE receipts SET created_at = ? WHERE expense_id = ?")
 			.bind("2020-01-01T00:00:00.000Z", old.id)
+			.run();
+		await db()
+			.prepare("UPDATE receipts SET created_at = ? WHERE expense_id = ?")
+			.bind("2026-11-20T00:00:00.000Z", fresh.id)
 			.run();
 
 		expect(await pruneReceipts(database, store, CUTOFF)).toBe(1);
@@ -356,6 +362,40 @@ describe("pruneReceipts", () => {
 		expect(await store.get(old.key)).toBeNull();
 		expect(await receiptCount(fresh.id)).toBe(1);
 		expect(await store.get(fresh.key)).not.toBeNull();
+	});
+
+	it("leaves a receipt that was replaced between the select and the delete", async () => {
+		const deleted: string[] = [];
+		const store: ReceiptStore = {
+			put: async () => {},
+			get: async () => null,
+			delete: async (key) => {
+				deleted.push(key);
+			},
+		};
+		const stale: ReceiptRow = {
+			expense_id: 7,
+			object_key: "old-key",
+			content_type: "image/png",
+			byte_size: 4,
+			created_at: "2020-01-01T00:00:00.000Z",
+		};
+		// A receipt re-uploaded since the select keeps the expense id but gets a
+		// new key, so the scoped delete matches nothing.
+		const db = {
+			prepare: () => ({
+				bind: () => ({
+					first: async () => null,
+					all: async () => ({ results: [stale] }),
+					run: async () => ({ meta: { changes: 0 } }),
+				}),
+			}),
+			exec: async () => {},
+			now: async () => "2026-01-01T00:00:00.000Z",
+		} as unknown as SqlDatabase;
+
+		expect(await pruneReceipts(db, store, CUTOFF)).toBe(0);
+		expect(deleted).toEqual([]);
 	});
 
 	it("still removes the row when the store cannot delete the object", async () => {
@@ -375,7 +415,7 @@ describe("pruneReceipts", () => {
 			},
 		};
 
-		// The row still goes, so the home list stops advertising a photo nobody
+		// The row goes first, so the home list stops advertising a photo nobody
 		// can open; the leftover bytes are for a lifecycle rule to sweep.
 		expect(await pruneReceipts(database, down, CUTOFF)).toBe(1);
 		expect(await receiptCount(old.id)).toBe(0);
