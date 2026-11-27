@@ -1,0 +1,21 @@
+src/db.ts
+  s_3a4bc3529a2444::t_6eea6e55cd91a6 61-67,107
+test/user-limit-concurrent.test.ts
+  s_3a4bc3529a2444::t_f3097fcef20738 38-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "aa72be92cbeee4f7851e406de5b9c8316dfaa3de",
+  "prompts": {},
+  "sessions": {
+    "s_3a4bc3529a2444": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de5296186ffe2CuNQuN2LhN3il",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
