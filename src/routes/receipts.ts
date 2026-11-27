@@ -41,6 +41,9 @@ app.get("/expenses/:id/photo", async (c) => {
 			"content-length": String(bytes.length),
 			// A receipt is private: no shared cache may keep a copy.
 			"cache-control": "private, no-store",
+			// And the bytes are served as the type they were stored under, never
+			// sniffed into something else.
+			"x-content-type-options": "nosniff",
 		},
 	});
 });
