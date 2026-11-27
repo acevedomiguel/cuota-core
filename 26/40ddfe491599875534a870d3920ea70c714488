@@ -1,0 +1,54 @@
+src/views/home.ejs
+  s_3a4bc3529a2444::t_58545354b81c8b 69
+migrations/postgres/0005_receipts.sql
+  s_3a4bc3529a2444::t_aadef892e8a53f 1-14
+src/routes/receipts.ts
+  s_3a4bc3529a2444::t_d27299fea5f891 1-25,31-32,34-40
+  s_3a4bc3529a2444::t_944dd326715f8e 26-30,33
+migrations/0005_receipts.sql
+  s_3a4bc3529a2444::t_447807bce8aa1d 1-14
+src/home.ts
+  s_3a4bc3529a2444::t_1e4d21db2a9dc5 10,17-18,28-29,136
+  s_3a4bc3529a2444::t_0c414bf696826d 123-129,144
+test/harness.ts
+  s_3a4bc3529a2444::t_f6d4fbc4961c05 4,44
+src/receipts.ts
+  s_3a4bc3529a2444::t_f14b6667a70f0c 1-78
+src/views-compiled.ts
+  s_3a4bc3529a2444::t_f695d8e247937e 506,594-600,996-1002
+src/app.ts
+  s_3a4bc3529a2444::t_9abe09bc0d38bf 18,30-34,47,54,157
+  s_3a4bc3529a2444::t_eafc958cc34269 8
+test/receipts.test.ts
+  s_3a4bc3529a2444::t_f7bda6f0eab87b 100-101
+  s_3a4bc3529a2444::t_6f3816f062a70d 1-99,102-126
+src/app-env.ts
+  s_3a4bc3529a2444::t_30a6d42e4c2623 3,14-15
+src/views/add.ejs
+  s_3a4bc3529a2444::t_6ab2a42db3ef3f 17
+  s_3a4bc3529a2444::t_75563e651e5238 84-89
+adapters/receipts.ts
+  s_3a4bc3529a2444::t_f27be3413df76f 1-58
+src/routes/expenses.ts
+  s_3a4bc3529a2444::t_344ab3081add0b 12
+  s_3a4bc3529a2444::t_43f92525c94613 171-180,183,186-199
+  s_3a4bc3529a2444::t_241a6efe845d51 184-185
+src/ports.ts
+  s_3a4bc3529a2444::t_b66659b1c749c2 54-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "2640ddfe491599875534a870d3920ea70c714488",
+  "prompts": {},
+  "sessions": {
+    "s_3a4bc3529a2444": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de5296186ffe2CuNQuN2LhN3il",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
