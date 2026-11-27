@@ -71,6 +71,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -156,6 +157,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -236,6 +238,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -355,6 +358,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -471,6 +475,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -656,6 +661,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -811,6 +817,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -904,6 +911,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -1053,6 +1061,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -1108,7 +1117,61 @@ about = __locals.about,
     ; __append(escapeFn( errors.userId ))
     ; __append("</p>")
     ;  } 
-    ; __append("\n    </div>\n\n    <button class=\"btn\" type=\"submit\">Save salary</button>\n    <p class=\"hint\">The new salary applies to expenses added from now on. Past records keep their split.</p>\n  </form>\n\n  ")
+    ; __append("\n    </div>\n\n    <button class=\"btn\" type=\"submit\">Save salary</button>\n    <p class=\"hint\">The new salary applies to expenses added from now on. Past records keep their split.</p>\n  </form>\n\n  <section class=\"card\" aria-labelledby=\"sharing-title\">\n    <h2 id=\"sharing-title\">How you split</h2>\n    <p class=\"hint\">In force now: <strong>")
+    ; __append(escapeFn( sharing.summary ))
+    ; __append("</strong></p>\n\n    <form action=\"/incomes/sharing\" method=\"post\" novalidate>\n      <input type=\"hidden\" name=\"_csrf\" value=\"")
+    ; __append(escapeFn( csrfToken ))
+    ; __append("\">\n      <input type=\"hidden\" name=\"mode\" value=\"fixed\">\n\n      <div class=\"field\">\n        <label for=\"percentage\">Fixed percentage</label>\n        <input class=\"amount-input\" id=\"percentage\" name=\"percentage\" type=\"text\" inputmode=\"decimal\"\n               placeholder=\"50\" value=\"")
+    ; __append(escapeFn( sharing.values.percentage || sharing.percentage ))
+    ; __append("\" autocomplete=\"off\">\n        ")
+    ;  if (errors.percentage) { 
+    ; __append("<p class=\"notice error\" role=\"alert\">")
+    ; __append(escapeFn( errors.percentage ))
+    ; __append("</p>")
+    ;  } 
+    ; __append("\n      </div>\n\n      <div class=\"field\">\n        <label id=\"subject-label\">Whose share</label>\n        <div class=\"payer\" role=\"radiogroup\" aria-labelledby=\"subject-label\">\n          ")
+    ;  bothUsers.forEach(function (u, i) { 
+    ; __append("\n            <label class=\"")
+    ; __append(escapeFn( i === 0 ? "llama" : "mono" ))
+    ; __append("\">\n              <input type=\"radio\" name=\"subjectUserId\" value=\"")
+    ; __append(escapeFn( u.id ))
+    ; __append("\"\n                     ")
+    ; __append(escapeFn( String(sharing.values.subjectUserId || sharing.subjectUserId) === String(u.id) ? "checked" : "" ))
+    ; __append(">\n              <i class=\"dot ")
+    ; __append(escapeFn( i === 0 ? "llama" : "mono" ))
+    ; __append("\" aria-hidden=\"true\"></i>")
+    ; __append(escapeFn( u.name ))
+    ; __append("\n            </label>\n          ")
+    ;  }); 
+    ; __append("\n        </div>\n        ")
+    ;  if (errors.subjectUserId) { 
+    ; __append("<p class=\"notice error\" role=\"alert\">")
+    ; __append(escapeFn( errors.subjectUserId ))
+    ; __append("</p>")
+    ;  } 
+    ; __append("\n      </div>\n\n      <button class=\"btn\" type=\"submit\">Use this percentage</button>\n      <p class=\"hint\">The other partner pays the rest. Applies to expenses added from now on; past records keep their split.</p>\n    </form>\n\n    ")
+    ;  if (sharing.mode === "fixed") { 
+    ; __append("\n      <form action=\"/incomes/sharing\" method=\"post\">\n        <input type=\"hidden\" name=\"_csrf\" value=\"")
+    ; __append(escapeFn( csrfToken ))
+    ; __append("\">\n        <input type=\"hidden\" name=\"mode\" value=\"salary\">\n        <button class=\"btn secondary\" type=\"submit\">Back to salary ratio</button>\n      </form>\n    ")
+    ;  } 
+    ; __append("\n\n    ")
+    ;  if (sharing.entries.length > 0) { 
+    ; __append("\n      <ul class=\"history\">\n        ")
+    ;  sharing.entries.forEach(function (entry, i) { 
+    ; __append("\n          <li>\n            <span class=\"when\">")
+    ; __append(escapeFn( entry.when ))
+    ; __append("</span>\n            <span class=\"amt\">")
+    ; __append(escapeFn( entry.label ))
+    ; __append("</span>\n            ")
+    ;  if (i === 0) { 
+    ; __append("<span class=\"pill-tag\">current</span>")
+    ;  } 
+    ; __append("\n          </li>\n        ")
+    ;  }); 
+    ; __append("\n      </ul>\n    ")
+    ;  } 
+    ; __append("\n  </section>\n\n  ")
     ;  incomes.forEach(function (group) { 
     ; __append("\n    <section class=\"card\" aria-label=\"")
     ; __append(escapeFn( group.name ))
@@ -1206,6 +1269,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -1297,6 +1361,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -1436,6 +1501,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -1529,6 +1595,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -1650,6 +1717,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
@@ -1746,6 +1814,7 @@ about = __locals.about,
   ratio = __locals.ratio,
   recent = __locals.recent,
   setup = __locals.setup,
+  sharing = __locals.sharing,
   snapshotNote = __locals.snapshotNote,
   stats = __locals.stats,
   theme = __locals.theme,
