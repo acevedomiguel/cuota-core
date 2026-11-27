@@ -45,6 +45,14 @@ class SqliteDatabase implements SqlDatabase {
 	/** Strictly increasing view of the database clock (see clock.ts). */
 	private readonly nowStrict: () => Promise<string>;
 
+	/**
+	 * Tail of the transaction queue. node:sqlite is one synchronous connection,
+	 * so only one transaction can be open at a time; two overlapping
+	 * `withTransaction` calls would otherwise both run `BEGIN` and one would
+	 * fail. Each transaction waits for the previous one to finish.
+	 */
+	private tail: Promise<unknown> = Promise.resolve();
+
 	constructor(private readonly db: DatabaseSync) {
 		this.nowStrict = makeStrictClock(async () => {
 			const row = this.db
@@ -68,7 +76,19 @@ class SqliteDatabase implements SqlDatabase {
 	}
 
 	async withTransaction<T>(work: (db: SqlDatabase) => Promise<T>): Promise<T> {
-		this.db.exec("BEGIN");
+		const run = this.tail.then(() => this.runTransaction(work));
+		// The queue must not be poisoned by a failed transaction.
+		this.tail = run.then(
+			() => undefined,
+			() => undefined,
+		);
+		return run;
+	}
+
+	private async runTransaction<T>(work: (db: SqlDatabase) => Promise<T>): Promise<T> {
+		// IMMEDIATE takes the write lock up front, so a reader cannot hold a
+		// snapshot that the insert then invalidates.
+		this.db.exec("BEGIN IMMEDIATE");
 		try {
 			const result = await work(this);
 			this.db.exec("COMMIT");

@@ -22,7 +22,9 @@ afterAll(async () => {
 });
 
 export const testConfig: AppConfig = {
-	allowedEmails: ["mike@example.com", "richel@example.com"],
+	// The third allowlisted email exists so the two-account limit is testable:
+	// the allowlist admits it, and the server still refuses a third account.
+	allowedEmails: ["mike@example.com", "richel@example.com", "third@example.com"],
 	passkeys: { rpId: "localhost", origin: "http://localhost", rpName: "Cuota" },
 	invoiceReader: { apiKey: "test-deepseek-key" },
 	version: pkg.version,

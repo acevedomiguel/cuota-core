@@ -1,4 +1,4 @@
-import type { SqlDatabase } from "./ports.js";
+import type { SqlDatabase, SqlValue } from "./ports.js";
 
 export interface UserRow {
 	id: number;
@@ -37,13 +37,82 @@ export interface NewUser {
 	passwordHash: string;
 }
 
-export async function createUser(db: SqlDatabase, user: NewUser): Promise<number> {
+/** A household is one couple: at most two accounts. */
+export const MAX_USERS = 2;
+
+/** Thrown when an account is attempted after the two-person limit is reached. */
+export class UserLimitReachedError extends Error {
+	constructor() {
+		super(`Cuota is limited to ${MAX_USERS} accounts`);
+		this.name = "UserLimitReachedError";
+	}
+}
+
+const INSERT_USER = "INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) RETURNING id";
+
+// For engines without an interactive transaction (the serverless binding): one
+// statement evaluates the count and the insert together, so a single-writer
+// engine cannot interleave another insert between them.
+const INSERT_USER_WITHIN_LIMIT = `INSERT INTO users (email, name, password_hash)
+	SELECT ?, ?, ? FROM (SELECT 1 AS one) AS guard
+	WHERE (SELECT COUNT(*) FROM users) < ?
+	RETURNING id`;
+
+// The lock for account creation. `settings` holds exactly one row per key, so
+// upserting this row takes a row lock on every engine and in every state —
+// including a fresh database with no accounts, where locking MIN(id) in `users`
+// would match nothing. Concurrent attempts queue on this row before counting.
+const ACCOUNT_LIMIT_LOCK_KEY = "account_limit_lock";
+const LOCK_ACCOUNTS = `INSERT INTO settings (key, value) VALUES (?, ?)
+	ON CONFLICT(key) DO UPDATE SET value = excluded.value`;
+
+async function insertUser(db: SqlDatabase, sql: string, values: SqlValue[]): Promise<number | null> {
 	const row = await db
-		.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) RETURNING id")
-		.bind(user.email, user.name, user.passwordHash)
+		.prepare(sql)
+		.bind(...values)
 		.first<{ id: number }>();
-	if (!row) throw new Error("could not create the user");
-	return row.id;
+	return row?.id ?? null;
+}
+
+/** How many accounts exist. Mirrors `setup.userCount`; kept here to avoid a cycle. */
+async function countUsers(db: SqlDatabase): Promise<number> {
+	const row = await db.prepare("SELECT COUNT(*) AS n FROM users").first<{ n: number | string }>();
+	return Number(row?.n ?? 0);
+}
+
+/**
+ * Creates an account without a limit. Used where the caller has already decided
+ * who may exist (the first-run setup) and by tests that seed several rows; the
+ * two-person rule belongs to `createUserWithinLimit`.
+ */
+export async function createUser(db: SqlDatabase, user: NewUser): Promise<number> {
+	const id = await insertUser(db, INSERT_USER, [user.email, user.name, user.passwordHash]);
+	if (id === null) throw new Error("could not create the user");
+	return id;
+}
+
+/**
+ * Creates an account unless the household is already full, and throws
+ * `UserLimitReachedError` when two accounts exist.
+ *
+ * Where the engine exposes a transaction, the count and the insert run inside
+ * it and the transaction first locks the household, so two concurrent signups
+ * cannot both read "one account" and each insert a second. Where it does not
+ * (the serverless binding), the guarded insert above evaluates the count and
+ * the insert in a single statement instead.
+ */
+export async function createUserWithinLimit(db: SqlDatabase, user: NewUser): Promise<number> {
+	if (db.withTransaction) {
+		return db.withTransaction(async (tx) => {
+			await tx.prepare(LOCK_ACCOUNTS).bind(ACCOUNT_LIMIT_LOCK_KEY, "1").run();
+			if ((await countUsers(tx)) >= MAX_USERS) throw new UserLimitReachedError();
+			return createUser(tx, user);
+		});
+	}
+
+	const id = await insertUser(db, INSERT_USER_WITHIN_LIMIT, [user.email, user.name, user.passwordHash, MAX_USERS]);
+	if (id === null) throw new UserLimitReachedError();
+	return id;
 }
 
 export async function getUserByEmail(db: SqlDatabase, email: string): Promise<UserRow | null> {

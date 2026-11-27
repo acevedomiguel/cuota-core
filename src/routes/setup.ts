@@ -75,6 +75,8 @@ app.post("/setup", async (c) => {
 	): Promise<{ ok: true; id: number } | { ok: false; outcome: ClaimOutcome }> => {
 		const outcome = await claimSetupSlot(tx, await tx.now());
 		if (outcome === "in-progress") return { ok: false, outcome };
+		// Setup already holds the single claim and only runs with no accounts, so
+		// it does not need the two-account guard: this is the first account.
 		const id = await createUser(tx, { email: input.email, name: input.name, passwordHash });
 		return { ok: true, id };
 	};
