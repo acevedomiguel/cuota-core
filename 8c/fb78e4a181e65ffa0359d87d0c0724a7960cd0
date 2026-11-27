@@ -1,0 +1,26 @@
+compose.yaml
+  s_3a4bc3529a2444::t_d0a06f688e3b74 36-38
+  s_3a4bc3529a2444::t_7df11628420dc4 59-61,66
+src/routes/expenses.ts
+  s_3a4bc3529a2444::t_72ce1e3c46d1ae 224-227
+test/receipts.test.ts
+  s_3a4bc3529a2444::t_f1b7b3601b7cd3 2-4,7
+  s_3a4bc3529a2444::t_95bdd37ba4093b 249-284
+  s_3a4bc3529a2444::t_70fdd025181b2e 324-356
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "8cfb78e4a181e65ffa0359d87d0c0724a7960cd0",
+  "prompts": {},
+  "sessions": {
+    "s_3a4bc3529a2444": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de5296186ffe2CuNQuN2LhN3il",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
