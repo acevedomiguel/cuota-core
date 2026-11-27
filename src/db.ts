@@ -58,10 +58,13 @@ const INSERT_USER_WITHIN_LIMIT = `INSERT INTO users (email, name, password_hash)
 	WHERE (SELECT COUNT(*) FROM users) < ?
 	RETURNING id`;
 
-// A no-op write that takes a row lock on the household, so a concurrent attempt
-// waits here instead of reading a stale count. An empty table has nothing to
-// lock, and racing the first two accounts is harmless: two is the limit anyway.
-const LOCK_USERS = "UPDATE users SET name = name WHERE id = (SELECT MIN(id) FROM users)";
+// The lock for account creation. `settings` holds exactly one row per key, so
+// upserting this row takes a row lock on every engine and in every state —
+// including a fresh database with no accounts, where locking MIN(id) in `users`
+// would match nothing. Concurrent attempts queue on this row before counting.
+const ACCOUNT_LIMIT_LOCK_KEY = "account_limit_lock";
+const LOCK_ACCOUNTS = `INSERT INTO settings (key, value) VALUES (?, ?)
+	ON CONFLICT(key) DO UPDATE SET value = excluded.value`;
 
 async function insertUser(db: SqlDatabase, sql: string, values: SqlValue[]): Promise<number | null> {
 	const row = await db
@@ -101,7 +104,7 @@ export async function createUser(db: SqlDatabase, user: NewUser): Promise<number
 export async function createUserWithinLimit(db: SqlDatabase, user: NewUser): Promise<number> {
 	if (db.withTransaction) {
 		return db.withTransaction(async (tx) => {
-			await tx.prepare(LOCK_USERS).run();
+			await tx.prepare(LOCK_ACCOUNTS).bind(ACCOUNT_LIMIT_LOCK_KEY, "1").run();
 			if ((await countUsers(tx)) >= MAX_USERS) throw new UserLimitReachedError();
 			return createUser(tx, user);
 		});
