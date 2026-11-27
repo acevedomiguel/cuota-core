@@ -52,6 +52,36 @@ describe("incomes", () => {
 		expect(await incomeAsOf(db(), mike, second)).toBe(6500000);
 		expect(await incomeAsOf(db(), mike, "2000-01-01T00:00:00.000Z")).toBe(0);
 	});
+
+	// The regression MIL-148 is about: an expense and a salary change written
+	// back-to-back used to be able to share a millisecond, which let the new
+	// salary retroactively re-split the expense. The strict clock makes the
+	// real-clock path deterministic, so no createdAt seam is needed here.
+	it("a salary recorded after an expense does not retroactively re-split it", async () => {
+		const mike = await seedUser("mike@example.com");
+		const richel = await seedUser("richel@example.com");
+
+		await addIncome(db(), { userId: mike, amountCents: 5000000 });
+		await addIncome(db(), { userId: richel, amountCents: 5000000 });
+
+		const expenseId = await createExpense(db(), {
+			date: "2026-11-20",
+			description: "Rent",
+			amountCents: 100000,
+			payerId: mike,
+		});
+		const expense = (await db().prepare("SELECT * FROM expenses WHERE id = ?").bind(expenseId).first()) as {
+			created_at: string;
+		};
+
+		// Salary changes after the expense was recorded.
+		await addIncome(db(), { userId: mike, amountCents: 9000000 });
+
+		// At the expense's own instant the old 50/50 ratio still applies; the
+		// later salary is not in force for it.
+		expect(await incomeAsOf(db(), mike, expense.created_at)).toBe(5000000);
+		expect(await incomeAsOf(db(), richel, expense.created_at)).toBe(5000000);
+	});
 });
 
 describe("balance events", () => {

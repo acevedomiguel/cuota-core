@@ -1,6 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import type { StatementSync } from "node:sqlite";
 import type { SqlDatabase, SqlStatement, SqlValue } from "../src/ports.js";
+import { makeStrictClock } from "./clock.js";
 
 /**
  * SQLite through Node's built-in driver, used by tests and by any small
@@ -41,7 +42,18 @@ class SqliteStatement implements SqlStatement {
 }
 
 class SqliteDatabase implements SqlDatabase {
-	constructor(private readonly db: DatabaseSync) {}
+	/** Strictly increasing view of the database clock (see clock.ts). */
+	private readonly nowStrict: () => Promise<string>;
+
+	constructor(private readonly db: DatabaseSync) {
+		this.nowStrict = makeStrictClock(async () => {
+			const row = this.db
+				.prepare("SELECT strftime('%Y-%m-%dT%H:%M:%fZ', 'now') AS now")
+				.get() as { now: string } | undefined;
+			if (!row) throw new Error("could not read the database clock");
+			return row.now;
+		});
+	}
 
 	prepare(sql: string): SqlStatement {
 		return new SqliteStatement(this.db.prepare(sql));
@@ -52,11 +64,7 @@ class SqliteDatabase implements SqlDatabase {
 	}
 
 	async now(): Promise<string> {
-		const row = this.db
-			.prepare("SELECT strftime('%Y-%m-%dT%H:%M:%fZ', 'now') AS now")
-			.get() as { now: string } | undefined;
-		if (!row) throw new Error("could not read the database clock");
-		return row.now;
+		return this.nowStrict();
 	}
 
 	async withTransaction<T>(work: (db: SqlDatabase) => Promise<T>): Promise<T> {
