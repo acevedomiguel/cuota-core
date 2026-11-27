@@ -8,8 +8,15 @@ import { fileReceipts, memoryReceipts } from "../adapters/receipts.js";
 import { createCuotaApp } from "../src/app.js";
 import type { AppEnv } from "../src/app-env.js";
 import type { ReceiptStore, SqlDatabase } from "../src/ports.js";
-import { MAX_RECEIPT_BYTES, pruneReceipts, receiptProblem, saveReceipt } from "../src/receipts.js";
-import type { ReceiptRow } from "../src/receipts.js";
+import {
+	MAX_RECEIPT_BYTES,
+	MAX_RETENTION_DAYS,
+	expensesWithReceipts,
+	pruneReceipts,
+	receiptCutoff,
+	receiptProblem,
+	saveReceipt,
+} from "../src/receipts.js";
 import { MAX_UPLOAD_BYTES } from "../src/routes/scan.js";
 import { getPage, initDb, postMultipart, refreshCsrf, signUpAndLogIn, type FormSession } from "./helpers.js";
 
@@ -340,7 +347,7 @@ describe("pruneReceipts", () => {
 		return { id, key: key! };
 	}
 
-	it("removes receipts older than the cutoff, keeping newer ones", async () => {
+	it("deletes rows older than the cutoff in one statement, keeping newer ones", async () => {
 		const store = memoryReceipts();
 		const session = await signUpAndLogIn("mike@example.com");
 
@@ -356,69 +363,98 @@ describe("pruneReceipts", () => {
 			.bind("2026-11-20T00:00:00.000Z", fresh.id)
 			.run();
 
-		expect(await pruneReceipts(database, store, CUTOFF)).toBe(1);
+		expect(await pruneReceipts(database, CUTOFF)).toBe(1);
 
 		expect(await receiptCount(old.id)).toBe(0);
-		expect(await store.get(old.key)).toBeNull();
 		expect(await receiptCount(fresh.id)).toBe(1);
+		// Rows only: the bytes are the store's business, expired by a lifecycle
+		// rule on the same window, so the object is still there.
+		expect(await store.get(old.key)).not.toBeNull();
 		expect(await store.get(fresh.key)).not.toBeNull();
 	});
+});
 
-	it("leaves a receipt that was replaced between the select and the delete", async () => {
-		const deleted: string[] = [];
-		const store: ReceiptStore = {
-			put: async () => {},
-			get: async () => null,
-			delete: async (key) => {
-				deleted.push(key);
-			},
-		};
-		const stale: ReceiptRow = {
-			expense_id: 7,
-			object_key: "old-key",
-			content_type: "image/png",
-			byte_size: 4,
-			created_at: "2020-01-01T00:00:00.000Z",
-		};
-		// A receipt re-uploaded since the select keeps the expense id but gets a
-		// new key, so the scoped delete matches nothing.
-		const db = {
-			prepare: () => ({
-				bind: () => ({
-					first: async () => null,
-					all: async () => ({ results: [stale] }),
-					run: async () => ({ meta: { changes: 0 } }),
-				}),
-			}),
-			exec: async () => {},
-			now: async () => "2026-01-01T00:00:00.000Z",
-		} as unknown as SqlDatabase;
-
-		expect(await pruneReceipts(db, store, CUTOFF)).toBe(0);
-		expect(deleted).toEqual([]);
-	});
-
-	it("still removes the row when the store cannot delete the object", async () => {
-		const store = memoryReceipts();
+describe("expensesWithReceipts", () => {
+	it("leaves out a receipt older than notBefore", async () => {
 		const session = await signUpAndLogIn("mike@example.com");
-		const old = await withReceipt(session, "Stuck receipt", store);
+		await addExpense(session, "Expired link");
+		const id = await expenseIdOf("Expired link");
+		await saveReceipt(database, memoryReceipts(), id, { bytes: new Uint8Array(4), type: "image/png" });
 		await db()
 			.prepare("UPDATE receipts SET created_at = ? WHERE expense_id = ?")
-			.bind("2020-01-01T00:00:00.000Z", old.id)
+			.bind("2020-01-01T00:00:00.000Z", id)
 			.run();
 
-		const down: ReceiptStore = {
-			put: (key, body, type) => store.put(key, body, type),
-			get: (key) => store.get(key),
-			delete: async () => {
-				throw new Error("bucket down");
-			},
-		};
+		expect(await expensesWithReceipts(database, [id])).toEqual(new Set([id]));
+		expect(await expensesWithReceipts(database, [id], "2026-01-01T00:00:00.000Z")).toEqual(new Set());
+	});
+});
 
-		// The row goes first, so the home list stops advertising a photo nobody
-		// can open; the leftover bytes are for a lifecycle rule to sweep.
-		expect(await pruneReceipts(database, down, CUTOFF)).toBe(1);
-		expect(await receiptCount(old.id)).toBe(0);
+describe("receiptCutoff", () => {
+	it("returns an ISO instant a window before now", () => {
+		expect(receiptCutoff(90, new Date("2026-11-27T00:00:00.000Z"))).toBe("2026-08-29T00:00:00.000Z");
+	});
+
+	it("treats a wild window as keep-forever instead of throwing", () => {
+		const now = new Date("2026-11-27T00:00:00.000Z");
+		const forever = receiptCutoff(MAX_RETENTION_DAYS, now);
+		expect(receiptCutoff(Number.POSITIVE_INFINITY, now)).toBe(forever);
+		expect(receiptCutoff(Number.NaN, now)).toBe(forever);
+		expect(receiptCutoff(0, now)).toBe(forever);
+	});
+});
+
+describe("a receipt retention window", () => {
+	const store = memoryReceipts();
+	const expiring = createCuotaApp({
+		database,
+		config: testConfig,
+		assets: { fetch: () => new Response("asset") },
+		receipts: store,
+		receiptRetentionDays: 90,
+	});
+
+	it("stops linking an aged receipt and sweeps its row as the list is drawn", async () => {
+		const session = await signUpAndLogIn("mike@example.com");
+
+		await addExpense(session, "Aged link", photoFile());
+		const aged = await expenseIdOf("Aged link");
+		await db()
+			.prepare("UPDATE receipts SET created_at = ? WHERE expense_id = ?")
+			.bind("2020-01-01T00:00:00.000Z", aged)
+			.run();
+
+		await addExpense(session, "Fresh link", photoFile());
+		const fresh = await expenseIdOf("Fresh link");
+
+		const html = await withApp(expiring, session, "/", {}).then((r) => r.text());
+		expect(html).not.toContain(`/expenses/${aged}/photo`);
+		expect(html).toContain(`/expenses/${fresh}/photo`);
+
+		// Drawing the page swept the aged row, leaving the fresh one.
+		expect(await receiptCount(aged)).toBe(0);
+		expect(await receiptCount(fresh)).toBe(1);
+	});
+
+	it("does not serve a photo past the window, even before the sweep", async () => {
+		const session = await signUpAndLogIn("mike@example.com");
+
+		await addExpense(session, "Aged route", photoFile());
+		const aged = await expenseIdOf("Aged route");
+		await saveReceipt(database, store, aged, { bytes: new Uint8Array(8), type: "image/png" });
+		await db()
+			.prepare("UPDATE receipts SET created_at = ? WHERE expense_id = ?")
+			.bind("2020-01-01T00:00:00.000Z", aged)
+			.run();
+
+		await addExpense(session, "Fresh route", photoFile());
+		const fresh = await expenseIdOf("Fresh route");
+		await saveReceipt(database, store, fresh, { bytes: new Uint8Array(8), type: "image/png" });
+
+		// No home render in between, so the row is still there: the window alone
+		// is what refuses the aged photo.
+		expect((await withApp(expiring, session, `/expenses/${aged}/photo`, {})).status).toBe(404);
+		expect((await withApp(expiring, session, `/expenses/${fresh}/photo`, {})).status).toBe(200);
 	});
 });
 

@@ -3,7 +3,7 @@
 
 import { Hono } from "hono";
 import type { AppEnv } from "../app-env.js";
-import { getReceipt } from "../receipts.js";
+import { getReceipt, receiptCutoff, retentionEnabled } from "../receipts.js";
 
 const app = new Hono<AppEnv>();
 
@@ -19,6 +19,14 @@ app.get("/expenses/:id/photo", async (c) => {
 
 	const receipt = await getReceipt(c.get("db"), expenseId);
 	if (!receipt) return c.notFound();
+
+	// Past the retention window the photo is not served either, even if its row
+	// is still waiting for the sweep: a retained photo is not a readable one.
+	const days = c.get("receiptRetentionDays");
+	if (retentionEnabled(days)) {
+		const cutoff = receiptCutoff(days, new Date(await c.get("db").now()));
+		if (receipt.created_at < cutoff) return c.notFound();
+	}
 
 	const object = await store.get(receipt.object_key);
 	if (!object) return c.notFound();

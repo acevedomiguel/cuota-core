@@ -5,6 +5,7 @@ import { currentUser, ensureCsrfToken, validCsrfToken } from "./auth.js";
 import { userCount } from "./setup.js";
 import type { AppConfig } from "./config.js";
 import { buildHome } from "./home.js";
+import { pruneReceipts, receiptCutoff, retentionEnabled } from "./receipts.js";
 import type { AssetHandler, ReceiptStore, SqlDatabase } from "./ports.js";
 import { renderView } from "./views.js";
 import { sessionMiddleware } from "./session.js";
@@ -32,6 +33,12 @@ export interface CuotaAppOptions {
 	 * attach or serve one, and every other page works as normal.
 	 */
 	receipts?: ReceiptStore;
+	/**
+	 * How long a receipt photo stays linked, in days. Optional: without it a
+	 * stored receipt is linked indefinitely. Past the window the photo stops
+	 * being offered, though its row remains until something deletes it.
+	 */
+	receiptRetentionDays?: number;
 	/** Mount extra routes before the auth gate, e.g. a health or metadata
 	 * endpoint that must answer without a session. They see the database,
 	 * config, and assets on the context but no session or user, so everything
@@ -44,7 +51,7 @@ export interface CuotaAppOptions {
  * build serves a container, a serverless runtime, or a test with no changes:
  * only the three ports differ between hosts.
  */
-export function createCuotaApp({ database, config, assets, receipts, hostRoutes }: CuotaAppOptions): Hono<AppEnv> {
+export function createCuotaApp({ database, config, assets, receipts, receiptRetentionDays, hostRoutes }: CuotaAppOptions): Hono<AppEnv> {
 	const app = new Hono<AppEnv>();
 
 	app.use(async (c, next) => {
@@ -52,6 +59,7 @@ export function createCuotaApp({ database, config, assets, receipts, hostRoutes 
 		c.set("config", config);
 		c.set("assets", assets);
 		c.set("receipts", receipts);
+		c.set("receiptRetentionDays", receiptRetentionDays);
 		await next();
 	});
 
@@ -146,7 +154,22 @@ export function createCuotaApp({ database, config, assets, receipts, hostRoutes 
 		const user = c.get("user");
 		if (!user) return c.redirect("/login", 303);
 
-		const view = await buildHome(c.get("db"), user.id);
+		// Receipts past the retention window are swept as the list is drawn: one
+		// best-effort statement, so a failure never breaks the page. The same
+		// cutoff hides them even if the delete did not run, and the store's own
+		// rule (a bucket lifecycle, say) expires the bytes. The cutoff comes from
+		// the database clock, like every other timestamp.
+		let receiptsNotBefore: string | undefined;
+		if (retentionEnabled(receiptRetentionDays)) {
+			receiptsNotBefore = receiptCutoff(receiptRetentionDays, new Date(await c.get("db").now()));
+			if (c.get("receipts")) {
+				await pruneReceipts(c.get("db"), receiptsNotBefore).catch((error) => {
+					console.warn("could not sweep expired receipts", error);
+				});
+			}
+		}
+
+		const view = await buildHome(c.get("db"), user.id, receiptsNotBefore);
 		return c.html(
 			renderView("home", {
 				...view,

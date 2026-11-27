@@ -178,9 +178,10 @@ TEST_DATABASE_URL=postgres://cuota:cuota@localhost:55432/cuota_test npm test
 - `AssetHandler` — `fetch(request)` serving `/static/*`.
 - `ReceiptStore` — `put`/`get`/`delete` by opaque key, for receipt photos. It is
   optional on `createCuotaApp`: a host with no bucket or directory can omit it,
-  and the add form simply hides the photo field. A host that wants photos to
-  expire can call `pruneReceipts(db, store, cutoff)` from a scheduled job; it
-  removes the row and its object together.
+  and the add form simply hides the photo field. `receiptRetentionDays` on
+  `createCuotaApp` sets how long a photo stays linked: past that window the home
+  list stops offering it and the row is swept on the next view, while the store's
+  own rule (a bucket lifecycle, say) expires the bytes.
 - `AppConfig` — allowlist, passkey relying party, optional invoice reading,
   version, and the optional about-page contact block.
 
