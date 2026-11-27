@@ -65,6 +65,18 @@ export function defineSqlDatabaseContract(
 			expect(now < new Date(Date.parse(now) + 1).toISOString()).toBe(true);
 		});
 
+		it("stamps strictly increasing instants even within one millisecond", async () => {
+			const db = await fresh();
+			// Back-to-back reads hit the same real millisecond, which is the
+			// collision the strict clock exists to remove.
+			const first = await db.now();
+			const second = await db.now();
+			const third = await db.now();
+
+			expect(first < second).toBe(true);
+			expect(second < third).toBe(true);
+		});
+
 		it("runs several statements in one exec", async () => {
 			const db = await fresh();
 			await db.exec(`

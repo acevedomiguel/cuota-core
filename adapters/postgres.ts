@@ -1,5 +1,6 @@
 import { Pool, types } from "pg";
 import type { SqlDatabase, SqlStatement, SqlValue } from "../src/ports.js";
+import { makeStrictClock } from "./clock.js";
 
 // PostgreSQL returns int8 (COUNT, SUM over integers) as a string to avoid
 // precision loss. The other adapters return numbers, and the app is written
@@ -84,11 +85,23 @@ class PostgresStatement implements SqlStatement {
 }
 
 class PostgresDatabase implements SqlDatabase {
+	/** Strictly increasing view of the database clock (see clock.ts). */
+	private readonly nowStrict: () => Promise<string>;
+
 	constructor(
 		private readonly connection: Queryable,
 		private readonly pool: Pool | null,
 		private readonly onClose: () => Promise<void>,
-	) {}
+	) {
+		this.nowStrict = makeStrictClock(async () => {
+			const { rows } = await this.connection.query(
+				`SELECT to_char((now() AT TIME ZONE 'utc'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS now`,
+			);
+			const row = rows[0] as { now: string } | undefined;
+			if (!row) throw new Error("could not read the database clock");
+			return row.now;
+		});
+	}
 
 	prepare(sql: string): SqlStatement {
 		return new PostgresStatement(this.connection, toPostgresPlaceholders(sql));
@@ -101,12 +114,7 @@ class PostgresDatabase implements SqlDatabase {
 	}
 
 	async now(): Promise<string> {
-		const { rows } = await this.connection.query(
-			`SELECT to_char((now() AT TIME ZONE 'utc'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS now`,
-		);
-		const row = rows[0] as { now: string } | undefined;
-		if (!row) throw new Error("could not read the database clock");
-		return row.now;
+		return this.nowStrict();
 	}
 
 	async withTransaction<T>(work: (db: SqlDatabase) => Promise<T>): Promise<T> {

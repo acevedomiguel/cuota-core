@@ -27,9 +27,11 @@ export interface SqlDatabase {
 	/**
 	 * The database clock as millisecond ISO text (`2026-11-26T09:00:00.000Z`).
 	 * Every stored timestamp comes from here, so ordering is the database's,
-	 * not the process's, and string comparison stays chronological. Two writes
-	 * in the same millisecond share an instant; callers that need a strict
-	 * order must not rely on the clock alone.
+	 * not the process's, and string comparison stays chronological. The
+	 * adapters guarantee strict monotonicity: each read returns a value
+	 * strictly later than the previous read on the same database instance, so
+	 * write order equals timestamp order and a row never shares an instant
+	 * with the one written just before it.
 	 */
 	now(): Promise<string>;
 	/**
