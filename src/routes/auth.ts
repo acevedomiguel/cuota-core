@@ -54,8 +54,9 @@ app.post("/signup", async (c) => {
 	try {
 		await createUserWithinLimit(c.get("db"), { email, name, passwordHash: await hashPassword(password) });
 	} catch (error) {
-		// The household is full. The database decided, so this holds even if two
-		// signups raced past the page.
+		// The household is full. The limit is decided by the database — under a
+		// lock where the engine has transactions — so two signups racing past the
+		// page cannot both become the second account.
 		if (error instanceof UserLimitReachedError) return renderError(LIMIT_MESSAGE, 403);
 		throw error;
 	}

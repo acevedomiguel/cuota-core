@@ -50,14 +50,18 @@ export class UserLimitReachedError extends Error {
 
 const INSERT_USER = "INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) RETURNING id";
 
-// The guarded insert decides the limit in the same statement that inserts, so
-// two simultaneous signups cannot both pass a check and create a third account
-// — the same reason `claimSetup` lets the database arbitrate. No returned row
-// means the household was already full.
+// For engines without an interactive transaction (the serverless binding): one
+// statement evaluates the count and the insert together, so a single-writer
+// engine cannot interleave another insert between them.
 const INSERT_USER_WITHIN_LIMIT = `INSERT INTO users (email, name, password_hash)
 	SELECT ?, ?, ? FROM (SELECT 1 AS one) AS guard
 	WHERE (SELECT COUNT(*) FROM users) < ?
 	RETURNING id`;
+
+// A no-op write that takes a row lock on the household, so a concurrent attempt
+// waits here instead of reading a stale count. An empty table has nothing to
+// lock, and racing the first two accounts is harmless: two is the limit anyway.
+const LOCK_USERS = "UPDATE users SET name = name WHERE id = (SELECT MIN(id) FROM users)";
 
 async function insertUser(db: SqlDatabase, sql: string, values: SqlValue[]): Promise<number | null> {
 	const row = await db
@@ -65,6 +69,12 @@ async function insertUser(db: SqlDatabase, sql: string, values: SqlValue[]): Pro
 		.bind(...values)
 		.first<{ id: number }>();
 	return row?.id ?? null;
+}
+
+/** How many accounts exist. Mirrors `setup.userCount`; kept here to avoid a cycle. */
+async function countUsers(db: SqlDatabase): Promise<number> {
+	const row = await db.prepare("SELECT COUNT(*) AS n FROM users").first<{ n: number | string }>();
+	return Number(row?.n ?? 0);
 }
 
 /**
@@ -79,11 +89,24 @@ export async function createUser(db: SqlDatabase, user: NewUser): Promise<number
 }
 
 /**
- * Creates an account unless the household is already full. Throws
- * `UserLimitReachedError` when two accounts exist, so a third signup is refused
- * by the server rather than only by the signup page.
+ * Creates an account unless the household is already full, and throws
+ * `UserLimitReachedError` when two accounts exist.
+ *
+ * Where the engine exposes a transaction, the count and the insert run inside
+ * it and the transaction first locks the household, so two concurrent signups
+ * cannot both read "one account" and each insert a second. Where it does not
+ * (the serverless binding), the guarded insert above evaluates the count and
+ * the insert in a single statement instead.
  */
 export async function createUserWithinLimit(db: SqlDatabase, user: NewUser): Promise<number> {
+	if (db.withTransaction) {
+		return db.withTransaction(async (tx) => {
+			await tx.prepare(LOCK_USERS).run();
+			if ((await countUsers(tx)) >= MAX_USERS) throw new UserLimitReachedError();
+			return createUser(tx, user);
+		});
+	}
+
 	const id = await insertUser(db, INSERT_USER_WITHIN_LIMIT, [user.email, user.name, user.passwordHash, MAX_USERS]);
 	if (id === null) throw new UserLimitReachedError();
 	return id;
