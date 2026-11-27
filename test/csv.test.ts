@@ -10,6 +10,10 @@ describe("csvField", () => {
 		expect(csvField("Dinner, drinks")).toBe('"Dinner, drinks"');
 		expect(csvField('He said "hi"')).toBe('"He said ""hi"""');
 		expect(csvField("line\nbreak")).toBe('"line\nbreak"');
+		// A lone quote and an already-doubled one both stay inside the field.
+		expect(csvField('"')).toBe('""""');
+		expect(csvField('""')).toBe('""""""');
+		expect(csvField("carriage\rreturn")).toBe('"carriage\rreturn"');
 	});
 });
 
@@ -19,11 +23,16 @@ describe("formulaSafe", () => {
 		expect(formulaSafe("+1")).toBe("'+1");
 		expect(formulaSafe("-1")).toBe("'-1");
 		expect(formulaSafe("@cmd")).toBe("'@cmd");
+		// A spreadsheet trims these before deciding, so they are guarded too.
+		expect(formulaSafe("\t=1+1")).toBe("'\t=1+1");
+		expect(formulaSafe("\r=1+1")).toBe("'\r=1+1");
 	});
 
 	it("leaves an ordinary value alone", () => {
 		expect(formulaSafe("Groceries")).toBe("Groceries");
 		expect(formulaSafe("")).toBe("");
+		// A value that is already just a quote is not a formula.
+		expect(formulaSafe("'")).toBe("'");
 	});
 });
 

@@ -66,8 +66,10 @@ app.get("/export", async (c) => {
 		headers: {
 			"content-type": "text/csv; charset=utf-8",
 			"content-disposition": `attachment; filename="${fileName(from, to)}"`,
-			// A household's spending: no shared cache may keep a copy.
+			// A household's spending: no shared cache may keep a copy, and the
+			// browser is told not to sniff the type, as on the receipt photo.
 			"cache-control": "private, no-store",
+			"x-content-type-options": "nosniff",
 		},
 	});
 });

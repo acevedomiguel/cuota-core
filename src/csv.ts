@@ -2,8 +2,12 @@
 // easy to get wrong — quoting a field that contains a comma, a quote, or a line
 // break, and stopping a spreadsheet from evaluating a description as a formula.
 
-/** Excel, Numbers, and Sheets all evaluate a field that starts with one of these. */
-const FORMULA_START = /^[=+\-@]/;
+/**
+ * Excel, Numbers, and Sheets all evaluate a field that starts with one of these.
+ * Tab and carriage return are on the list too — a spreadsheet trims them before
+ * deciding, so a value that only looks inert would still be evaluated.
+ */
+const FORMULA_START = /^[=+\-@\t\r]/;
 
 /**
  * Defuses a value that a spreadsheet would treat as a formula by prefixing a
