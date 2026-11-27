@@ -1,0 +1,30 @@
+src/db.ts
+  s_3a4bc3529a2444::t_6234c88d754de4 40-62,64-65,67-89
+  s_3a4bc3529a2444::t_570633324589d6 1
+test/harness.ts
+  s_3a4bc3529a2444::t_53b9a5fe35e968 25-27
+src/routes/setup.ts
+  s_3a4bc3529a2444::t_c1ea152ceef92b 4,78
+  s_3a4bc3529a2444::t_f7008001b02138 89-93
+src/routes/auth.ts
+  s_3a4bc3529a2444::t_18dac1086b483b 4,7
+  s_3a4bc3529a2444::t_830d42bd842c1b 23,54-61
+test/user-limit.test.ts
+  s_3a4bc3529a2444::t_b464cab99240fb 1-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "8e7f529749584e417a378512064cdd1079bd209a",
+  "prompts": {},
+  "sessions": {
+    "s_3a4bc3529a2444": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_de5296186ffe2CuNQuN2LhN3il",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "human_author": "Miguel Angel Acevedo <acevedomiguel@gmail.com>"
+    }
+  }
+}
