@@ -1,4 +1,4 @@
-import type { AppConfig } from "../src/config.js";
+import type { AboutConfig, AppConfig } from "../src/config.js";
 
 /**
  * Turns environment variables into the app config and the bits only the server
@@ -28,7 +28,16 @@ function portOf(raw: string | undefined): number {
 	return port;
 }
 
-export function loadSettings(env: NodeJS.ProcessEnv = process.env): ServerSettings {
+/** Formats an instant as `YYYY-MM-DD HH:MM UTC`, the shape the about page shows. */
+function formatDeployedAt(at: Date): string {
+	const pad = (n: number) => String(n).padStart(2, "0");
+	return (
+		`${at.getUTCFullYear()}-${pad(at.getUTCMonth() + 1)}-${pad(at.getUTCDate())} ` +
+		`${pad(at.getUTCHours())}:${pad(at.getUTCMinutes())} UTC`
+	);
+}
+
+export function loadSettings(env: NodeJS.ProcessEnv = process.env, startedAt: Date = new Date()): ServerSettings {
 	const rpId = env.PASSKEY_RP_ID?.trim();
 	const origin = env.PASSKEY_ORIGIN?.trim();
 
@@ -36,14 +45,17 @@ export function loadSettings(env: NodeJS.ProcessEnv = process.env): ServerSettin
 		throw new Error("PASSKEY_RP_ID and PASSKEY_ORIGIN must be set together, or neither to disable passkeys");
 	}
 
-	const about =
-		env.ABOUT_BUILT_BY || env.ABOUT_EMAIL || env.ABOUT_GITHUB
-			? {
-					...(env.ABOUT_BUILT_BY ? { builtBy: env.ABOUT_BUILT_BY } : {}),
-					...(env.ABOUT_EMAIL ? { email: env.ABOUT_EMAIL } : {}),
-					...(env.ABOUT_GITHUB ? { github: env.ABOUT_GITHUB } : {}),
-				}
-			: undefined;
+	const version = env.APP_VERSION?.trim() || "0.0.0-dev";
+
+	// A container can always name what is running, so the about page carries the
+	// version and the instant this process started. A host that cannot say omits
+	// the row instead.
+	const about: AboutConfig = {
+		...(env.ABOUT_BUILT_BY ? { builtBy: env.ABOUT_BUILT_BY } : {}),
+		...(env.ABOUT_EMAIL ? { email: env.ABOUT_EMAIL } : {}),
+		...(env.ABOUT_GITHUB ? { github: env.ABOUT_GITHUB } : {}),
+		deployed: { label: version, at: formatDeployedAt(startedAt) },
+	};
 
 	const apiKey = env.DEEPSEEK_API_KEY?.trim();
 
@@ -51,9 +63,9 @@ export function loadSettings(env: NodeJS.ProcessEnv = process.env): ServerSettin
 		allowedEmails: csv(env.ALLOWED_EMAILS),
 		passkeys: rpId && origin ? { rpId, origin, rpName: env.PASSKEY_RP_NAME?.trim() || "Cuota" } : null,
 		invoiceReader: apiKey ? { apiKey, ...(env.DEEPSEEK_MODEL ? { model: env.DEEPSEEK_MODEL } : {}) } : null,
-		version: env.APP_VERSION?.trim() || "0.0.0-dev",
+		version,
 		setupToken: env.SETUP_TOKEN?.trim() || undefined,
-		...(about ? { about } : {}),
+		about,
 	};
 
 	return {
