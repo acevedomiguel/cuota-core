@@ -13,7 +13,7 @@ import { loadSettings } from "./env.js";
  * restarts or reports instead of serving a half-configured app.
  */
 
-const settings = loadSettings();
+const settings = loadSettings(process.env, new Date());
 const opened = await openDatabase(settings.databaseUrl);
 
 try {
