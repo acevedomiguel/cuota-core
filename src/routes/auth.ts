@@ -1,9 +1,10 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../app-env.js";
 import {
-	createUser,
+	createUserWithinLimit,
 	destroyDbSession,
 	getUserByEmail,
+	UserLimitReachedError,
 } from "../db.js";
 import {
 	emailTaken,
@@ -19,6 +20,7 @@ import { renderView } from "../views.js";
 const LOGIN_ERROR = "Sign in failed. Check your email and password and try again.";
 const MIN_PASSWORD_MESSAGE = "Password must be at least 12 characters.";
 const INVITATION_MESSAGE = "Cuota is invitation only. Ask for an invite, then try again.";
+const LIMIT_MESSAGE = "Cuota is for two people, and both accounts are taken.";
 
 const app = new Hono<AppEnv>();
 
@@ -49,7 +51,14 @@ app.post("/signup", async (c) => {
 		return renderError("That email already has an account. Sign in instead.", 400);
 	}
 
-	await createUser(c.get("db"), { email, name, passwordHash: await hashPassword(password) });
+	try {
+		await createUserWithinLimit(c.get("db"), { email, name, passwordHash: await hashPassword(password) });
+	} catch (error) {
+		// The household is full. The database decided, so this holds even if two
+		// signups raced past the page.
+		if (error instanceof UserLimitReachedError) return renderError(LIMIT_MESSAGE, 403);
+		throw error;
+	}
 	return c.redirect("/login", 303);
 });
 

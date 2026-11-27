@@ -1,4 +1,4 @@
-import type { SqlDatabase } from "./ports.js";
+import type { SqlDatabase, SqlValue } from "./ports.js";
 
 export interface UserRow {
 	id: number;
@@ -37,13 +37,56 @@ export interface NewUser {
 	passwordHash: string;
 }
 
-export async function createUser(db: SqlDatabase, user: NewUser): Promise<number> {
+/** A household is one couple: at most two accounts. */
+export const MAX_USERS = 2;
+
+/** Thrown when an account is attempted after the two-person limit is reached. */
+export class UserLimitReachedError extends Error {
+	constructor() {
+		super(`Cuota is limited to ${MAX_USERS} accounts`);
+		this.name = "UserLimitReachedError";
+	}
+}
+
+const INSERT_USER = "INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) RETURNING id";
+
+// The guarded insert decides the limit in the same statement that inserts, so
+// two simultaneous signups cannot both pass a check and create a third account
+// — the same reason `claimSetup` lets the database arbitrate. No returned row
+// means the household was already full.
+const INSERT_USER_WITHIN_LIMIT = `INSERT INTO users (email, name, password_hash)
+	SELECT ?, ?, ? FROM (SELECT 1 AS one) AS guard
+	WHERE (SELECT COUNT(*) FROM users) < ?
+	RETURNING id`;
+
+async function insertUser(db: SqlDatabase, sql: string, values: SqlValue[]): Promise<number | null> {
 	const row = await db
-		.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) RETURNING id")
-		.bind(user.email, user.name, user.passwordHash)
+		.prepare(sql)
+		.bind(...values)
 		.first<{ id: number }>();
-	if (!row) throw new Error("could not create the user");
-	return row.id;
+	return row?.id ?? null;
+}
+
+/**
+ * Creates an account without a limit. Used where the caller has already decided
+ * who may exist (the first-run setup) and by tests that seed several rows; the
+ * two-person rule belongs to `createUserWithinLimit`.
+ */
+export async function createUser(db: SqlDatabase, user: NewUser): Promise<number> {
+	const id = await insertUser(db, INSERT_USER, [user.email, user.name, user.passwordHash]);
+	if (id === null) throw new Error("could not create the user");
+	return id;
+}
+
+/**
+ * Creates an account unless the household is already full. Throws
+ * `UserLimitReachedError` when two accounts exist, so a third signup is refused
+ * by the server rather than only by the signup page.
+ */
+export async function createUserWithinLimit(db: SqlDatabase, user: NewUser): Promise<number> {
+	const id = await insertUser(db, INSERT_USER_WITHIN_LIMIT, [user.email, user.name, user.passwordHash, MAX_USERS]);
+	if (id === null) throw new UserLimitReachedError();
+	return id;
 }
 
 export async function getUserByEmail(db: SqlDatabase, email: string): Promise<UserRow | null> {

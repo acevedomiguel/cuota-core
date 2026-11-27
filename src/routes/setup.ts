@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { hashPassword, passwordLongEnough } from "../auth.js";
 import type { AppEnv } from "../app-env.js";
-import { createUser } from "../db.js";
+import { createUserWithinLimit, UserLimitReachedError } from "../db.js";
 import { claimSetupSlot, readSetupInput, releaseSetup, userCount, type ClaimOutcome } from "../setup.js";
 import type { SqlDatabase } from "../ports.js";
 import { renderView } from "../views.js";
@@ -75,7 +75,7 @@ app.post("/setup", async (c) => {
 	): Promise<{ ok: true; id: number } | { ok: false; outcome: ClaimOutcome }> => {
 		const outcome = await claimSetupSlot(tx, await tx.now());
 		if (outcome === "in-progress") return { ok: false, outcome };
-		const id = await createUser(tx, { email: input.email, name: input.name, passwordHash });
+		const id = await createUserWithinLimit(tx, { email: input.email, name: input.name, passwordHash });
 		return { ok: true, id };
 	};
 
@@ -86,6 +86,11 @@ app.post("/setup", async (c) => {
 		// A transient failure must not leave the deployment unsettable: drop the
 		// claim and let the operator try again.
 		await releaseSetup(db).catch(() => {});
+		// A signup that won the race filled the household between the pre-check
+		// above and this insert; the limit, not a duplicate, is the truth.
+		if (error instanceof UserLimitReachedError) {
+			return renderError("Cuota already has two accounts. Sign in instead.", 409);
+		}
 		if (String(error).includes("UNIQUE") || String(error).includes("duplicate key")) {
 			return renderError(TAKEN_MESSAGE, 400);
 		}
