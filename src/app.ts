@@ -13,6 +13,7 @@ import aboutRoutes from "./routes/about.js";
 import analyticsRoutes from "./routes/analytics.js";
 import authRoutes from "./routes/auth.js";
 import expenseRoutes from "./routes/expenses.js";
+import exportRoutes from "./routes/export.js";
 import incomeRoutes from "./routes/incomes.js";
 import openingRoutes from "./routes/opening.js";
 import passkeyRoutes from "./routes/passkeys.js";
@@ -191,6 +192,7 @@ export function createCuotaApp({ database, config, assets, receipts, receiptRete
 	app.route("/", analyticsRoutes);
 	app.route("/", authRoutes);
 	app.route("/", expenseRoutes);
+	app.route("/", exportRoutes);
 	app.route("/", incomeRoutes);
 	app.route("/", openingRoutes);
 	app.route("/", passkeyRoutes);

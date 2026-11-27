@@ -4,7 +4,7 @@
 // string comparison is also chronological comparison.
 
 import { UNCATEGORIZED } from "./categories.js";
-import type { SqlDatabase } from "./ports.js";
+import type { SqlDatabase, SqlValue } from "./ports.js";
 
 export interface ExpenseRow {
 	id: number;
@@ -83,6 +83,35 @@ export async function listExpensesSince(db: SqlDatabase, cutoff: string): Promis
 	const { results } = await db
 		.prepare("SELECT * FROM expenses WHERE created_at >= ? ORDER BY created_at ASC, id ASC")
 		.bind(cutoff)
+		.all<ExpenseRow>();
+	return results ?? [];
+}
+
+/**
+ * Expenses recorded on a `date` within a range, oldest first. Both ends are
+ * inclusive and either may be omitted to leave that side unbounded. Filtered on
+ * the expense's own date — when the money was spent — not when it was typed in,
+ * because that is what a range export means to the person asking for it.
+ */
+export async function listExpensesBetween(
+	db: SqlDatabase,
+	from?: string,
+	to?: string,
+): Promise<ExpenseRow[]> {
+	const clauses: string[] = [];
+	const values: SqlValue[] = [];
+	if (from !== undefined) {
+		clauses.push("date >= ?");
+		values.push(from);
+	}
+	if (to !== undefined) {
+		clauses.push("date <= ?");
+		values.push(to);
+	}
+	const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
+	const { results } = await db
+		.prepare(`SELECT * FROM expenses ${where} ORDER BY date ASC, id ASC`)
+		.bind(...values)
 		.all<ExpenseRow>();
 	return results ?? [];
 }

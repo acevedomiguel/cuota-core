@@ -31,6 +31,18 @@
     </p>
   </section>
 
+  <section class="card export-card" aria-labelledby="export-title">
+    <h2 id="export-title" class="section-title">Export</h2>
+    <p class="hint">Download the ledger as a CSV for a range of dates. Both ends are included.</p>
+    <form class="year-form" action="/export" method="get">
+      <label for="from">From</label>
+      <input id="from" name="from" type="date" value="<%= analytics.year %>-01-01">
+      <label for="to">To</label>
+      <input id="to" name="to" type="date" value="<%= analytics.year %>-12-31">
+      <button class="btn secondary" type="submit">Download CSV</button>
+    </form>
+  </section>
+
   <% if (!analytics.hasData) { %>
 
     <section class="card" aria-label="No spending this period">
