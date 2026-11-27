@@ -503,7 +503,7 @@ about = __locals.about,
     ; __append(escapeFn( notice ))
     ; __append("</p>\n  ")
     ;  } 
-    ; __append("\n\n  <form action=\"/add\" method=\"post\" novalidate>\n    <input type=\"hidden\" name=\"_csrf\" value=\"")
+    ; __append("\n\n  <form action=\"/add\" method=\"post\" novalidate enctype=\"multipart/form-data\">\n    <input type=\"hidden\" name=\"_csrf\" value=\"")
     ; __append(escapeFn( csrfToken ))
     ; __append("\">\n\n    <div class=\"form-grid\">\n    <div class=\"form-fields\">\n      <div class=\"field\">\n        <label for=\"amount\">Amount</label>\n        <input class=\"amount-input\" id=\"amount\" name=\"amount\" type=\"text\" inputmode=\"decimal\"\n               placeholder=\"0.00\" value=\"")
     ; __append(escapeFn( values.amount ))
@@ -591,7 +591,13 @@ about = __locals.about,
     ; __append(escapeFn( pct[1] ))
     ; __append("</span></span>\n          <span class=\"val\" data-share-b>")
     ; __append(escapeFn( preview.b ))
-    ; __append("</span>\n        </div>\n      </div>\n      <p class=\"hint\">Split at the income ratio in force now. This stays with this expense.</p>\n\n      <button class=\"btn\" type=\"submit\">Save expense</button>\n    </div>\n    </div>\n  </form>\n\n</main>\n\n")
+    ; __append("</span>\n        </div>\n      </div>\n      <p class=\"hint\">Split at the income ratio in force now. This stays with this expense.</p>\n\n      <div class=\"field\">\n        <label for=\"photo\">Receipt photo <span class=\"hint\">(optional)</span></label>\n        <input id=\"photo\" name=\"photo\" type=\"file\" accept=\"image/*\" capture=\"environment\">\n        ")
+    ;  if (errors.photo) { 
+    ; __append("<p class=\"notice error\" role=\"alert\">")
+    ; __append(escapeFn( errors.photo ))
+    ; __append("</p>")
+    ;  } 
+    ; __append("\n      </div>\n\n      <button class=\"btn\" type=\"submit\">Save expense</button>\n    </div>\n    </div>\n  </form>\n\n</main>\n\n")
     ; __append( include("_nav", { active: active }) )
     ; __append("\n<script type=\"module\">\n  const preview = document.querySelector(\".preview\");\n  const amount = document.querySelector(\"#amount\");\n  if (preview && amount) {\n    const ratioA = Number(preview.dataset.ratioA);\n    const lowerIsA = preview.dataset.lower === \"a\";\n    const shareA = preview.querySelector(\"[data-share-a]\");\n    const shareB = preview.querySelector(\"[data-share-b]\");\n    const hkd = (cents) => \"HK$ \" + Math.floor(cents / 100).toLocaleString(\"en-US\") + \".\" + String(cents % 100).padStart(2, \"0\");\n    const draw = () => {\n      const match = /^(\\d+)(?:\\.(\\d{1,2}))?$/.exec(amount.value.trim());\n      const cents = match ? Number(match[1]) * 100 + Number((match[2] || \"\").padEnd(2, \"0\")) : 0;\n      let a = Math.floor(cents * ratioA);\n      const leftover = cents - a - Math.floor(cents - cents * ratioA);\n      if (leftover > 0 && lowerIsA) a += leftover;\n      shareA.textContent = hkd(cents ? a : 0);\n      shareB.textContent = hkd(cents ? cents - a : 0);\n    };\n    amount.addEventListener(\"input\", draw);\n    draw();\n  }\n</script>\n")
     ; __append( include("_foot", { theme: true }) )
@@ -987,7 +993,13 @@ about = __locals.about,
     ; __append(escapeFn( e.shareLabel ))
     ; __append(" ")
     ; __append(escapeFn( e.share ))
-    ; __append("</div>\n            </div>\n          </li>\n        ")
+    ; __append("</div>\n              ")
+    ;  if (e.receipt) { 
+    ; __append("<div class=\"share\"><a href=\"/expenses/")
+    ; __append(escapeFn( e.id ))
+    ; __append("/photo\">View receipt</a></div>")
+    ;  } 
+    ; __append("\n            </div>\n          </li>\n        ")
     ;  }); 
     ; __append("\n      </ul>\n    ")
     ;  } 

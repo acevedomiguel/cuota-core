@@ -1,6 +1,7 @@
 import { afterAll } from "vitest";
 import pkg from "../package.json";
 import { fileAssets } from "../adapters/assets.js";
+import { memoryReceipts } from "../adapters/receipts.js";
 import { createCuotaApp } from "../src/app.js";
 import type { AppConfig } from "../src/config.js";
 import { openTestDatabase, usingPostgres } from "./dialect.js";
@@ -40,6 +41,7 @@ export const app = createCuotaApp({
 	database,
 	config: testConfig,
 	assets: fileAssets(new URL("../public", import.meta.url).pathname),
+	receipts: memoryReceipts(),
 });
 
 /** The database, under the name the ported tests already use. */

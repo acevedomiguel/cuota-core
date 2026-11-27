@@ -9,6 +9,7 @@ import { listUsers, type UserRow } from "../db.js";
 import type { AppEnv } from "../app-env.js";
 import { createExpense, listExpenses, listIncomes } from "../ledger.js";
 import type { SqlDatabase } from "../ports.js";
+import { receiptProblem, saveReceipt } from "../receipts.js";
 import { currentRatio, listSharingRules } from "../sharing.js";
 import { todayInHongKong } from "../time.js";
 import { renderView } from "../views.js";
@@ -167,11 +168,35 @@ app.post("/add", async (c) => {
 		category: String(body.category ?? UNCATEGORIZED),
 	};
 
-	if (!result.ok) {
-		return c.html(renderView("add", viewLocals(form, c.get("csrfToken"), values, result.errors)), 422);
+	// The optional receipt photo rides along with the same form. It is validated
+	// before the expense is written, so a bad file never creates a half entry.
+	const photo = body.photo;
+	let photoFile: File | null = null;
+	let photoError = "";
+	if (photo instanceof File && photo.size > 0) {
+		const problem = receiptProblem(photo);
+		if (problem === "type") photoError = "That receipt photo isn't a JPEG, PNG, GIF, or WebP image.";
+		else if (problem === "size") photoError = "That receipt photo is too large. Try a smaller one.";
+		else photoFile = photo;
 	}
 
-	await createExpense(c.get("db"), result.value);
+	if (!result.ok || photoError !== "") {
+		const base = result.ok ? {} : result.errors;
+		const errors = photoError === "" ? base : { ...base, photo: photoError };
+		return c.html(renderView("add", viewLocals(form, c.get("csrfToken"), values, errors)), 422);
+	}
+
+	const expenseId = await createExpense(c.get("db"), result.value);
+
+	// A photo with nowhere to go is dropped rather than failing the save: the
+	// expense is the point, and the store is an optional host capability.
+	const store = c.get("receipts");
+	if (photoFile && store) {
+		await saveReceipt(c.get("db"), store, expenseId, {
+			bytes: new Uint8Array(await photoFile.arrayBuffer()),
+			type: photoFile.type,
+		});
+	}
 	return c.redirect("/", 303);
 });
 

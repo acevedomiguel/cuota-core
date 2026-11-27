@@ -66,6 +66,7 @@
             <div class="amt">
               <div class="paid"><%= e.paid %></div>
               <div class="share"><%= e.shareLabel %> <%= e.share %></div>
+              <% if (e.receipt) { %><div class="share"><a href="/expenses/<%= e.id %>/photo">View receipt</a></div><% } %>
             </div>
           </li>
         <% }); %>
