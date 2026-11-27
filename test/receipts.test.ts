@@ -8,7 +8,7 @@ import { fileReceipts, memoryReceipts } from "../adapters/receipts.js";
 import { createCuotaApp } from "../src/app.js";
 import type { AppEnv } from "../src/app-env.js";
 import type { ReceiptStore, SqlDatabase } from "../src/ports.js";
-import { MAX_RECEIPT_BYTES, receiptProblem, saveReceipt } from "../src/receipts.js";
+import { MAX_RECEIPT_BYTES, pruneReceipts, receiptProblem, saveReceipt } from "../src/receipts.js";
 import { MAX_UPLOAD_BYTES } from "../src/routes/scan.js";
 import { getPage, initDb, postMultipart, refreshCsrf, signUpAndLogIn, type FormSession } from "./helpers.js";
 
@@ -319,6 +319,66 @@ describe("saveReceipt", () => {
 
 		expect(puts).toHaveLength(1);
 		expect(deletes).toEqual(puts);
+	});
+});
+
+describe("pruneReceipts", () => {
+	const CUTOFF = "2026-01-01T00:00:00.000Z";
+
+	/** Adds an expense, stores a photo for it, and returns the expense id. */
+	async function withReceipt(session: FormSession, description: string, store: ReceiptStore) {
+		await addExpense(session, description);
+		const id = await expenseIdOf(description);
+		await saveReceipt(database, store, id, { bytes: new Uint8Array(8), type: "image/png" });
+		const key = (
+			await db()
+				.prepare("SELECT object_key FROM receipts WHERE expense_id = ?")
+				.bind(id)
+				.first<{ object_key: string }>()
+		)?.object_key;
+		return { id, key: key! };
+	}
+
+	it("removes receipts older than the cutoff, keeping newer ones", async () => {
+		const store = memoryReceipts();
+		const session = await signUpAndLogIn("mike@example.com");
+
+		const old = await withReceipt(session, "Old receipt", store);
+		const fresh = await withReceipt(session, "Fresh receipt", store);
+		await db()
+			.prepare("UPDATE receipts SET created_at = ? WHERE expense_id = ?")
+			.bind("2020-01-01T00:00:00.000Z", old.id)
+			.run();
+
+		expect(await pruneReceipts(database, store, CUTOFF)).toBe(1);
+
+		expect(await receiptCount(old.id)).toBe(0);
+		expect(await store.get(old.key)).toBeNull();
+		expect(await receiptCount(fresh.id)).toBe(1);
+		expect(await store.get(fresh.key)).not.toBeNull();
+	});
+
+	it("still removes the row when the store cannot delete the object", async () => {
+		const store = memoryReceipts();
+		const session = await signUpAndLogIn("mike@example.com");
+		const old = await withReceipt(session, "Stuck receipt", store);
+		await db()
+			.prepare("UPDATE receipts SET created_at = ? WHERE expense_id = ?")
+			.bind("2020-01-01T00:00:00.000Z", old.id)
+			.run();
+
+		const down: ReceiptStore = {
+			put: (key, body, type) => store.put(key, body, type),
+			get: (key) => store.get(key),
+			delete: async () => {
+				throw new Error("bucket down");
+			},
+		};
+
+		// The row still goes, so the home list stops advertising a photo nobody
+		// can open; the leftover bytes are for a lifecycle rule to sweep.
+		expect(await pruneReceipts(database, down, CUTOFF)).toBe(1);
+		expect(await receiptCount(old.id)).toBe(0);
 	});
 });
 

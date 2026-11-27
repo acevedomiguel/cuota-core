@@ -83,3 +83,29 @@ export async function expensesWithReceipts(db: SqlDatabase, expenseIds: number[]
 		.all<{ expense_id: number }>();
 	return new Set((results ?? []).map((row) => Number(row.expense_id)));
 }
+
+/** Receipts created before `cutoff`, oldest first. */
+export async function receiptsBefore(db: SqlDatabase, cutoff: string): Promise<ReceiptRow[]> {
+	const { results } = await db
+		.prepare("SELECT * FROM receipts WHERE created_at < ? ORDER BY created_at")
+		.bind(cutoff)
+		.all<ReceiptRow>();
+	return results ?? [];
+}
+
+/**
+ * Deletes every receipt created before `cutoff` (an ISO instant, compared as
+ * text like every other timestamp): the stored object first, then the row.
+ * Dropping the object is best-effort — if the store is down the row still goes,
+ * so the home list stops advertising a photo nobody can open, and a host-side
+ * lifecycle rule can sweep the leftover bytes. Removing a missing object or row
+ * is a no-op, so a rerun is safe. Returns how many rows were removed.
+ */
+export async function pruneReceipts(db: SqlDatabase, store: ReceiptStore, cutoff: string): Promise<number> {
+	const expired = await receiptsBefore(db, cutoff);
+	for (const receipt of expired) {
+		await store.delete(receipt.object_key).catch(() => {});
+		await db.prepare("DELETE FROM receipts WHERE expense_id = ?").bind(receipt.expense_id).run();
+	}
+	return expired.length;
+}
