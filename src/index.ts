@@ -16,4 +16,4 @@ export type { AppEnv } from "./app-env.js";
 export type { AboutConfig, AppConfig, InvoiceReaderConfig, PasskeyConfig } from "./config.js";
 export { applyMigrations } from "./migrations.js";
 export type { Migration, MigrationResult } from "./migrations.js";
-export type { AssetHandler, Session, SqlDatabase, SqlStatement, SqlValue } from "./ports.js";
+export type { AssetHandler, ReceiptStore, Session, SqlDatabase, SqlStatement, SqlValue } from "./ports.js";

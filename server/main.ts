@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { serve } from "@hono/node-server";
 import { fileAssets } from "../adapters/assets.js";
+import { fileReceipts } from "../adapters/receipts.js";
 import { readMigrations } from "../adapters/migration-files.js";
 import { createCuotaApp } from "../src/app.js";
 import { applyMigrations } from "../src/migrations.js";
@@ -32,6 +33,8 @@ const app = createCuotaApp({
 	database: opened.db,
 	config: settings.config,
 	assets: fileAssets(join(process.cwd(), "public")),
+	// Receipt photos live on disk beside the database, so a restart keeps them.
+	receipts: fileReceipts(settings.receiptsDir),
 	hostRoutes: (host) => {
 		// Before the auth gate, so a probe does not need a session.
 		host.get("/healthz", async (c) => {

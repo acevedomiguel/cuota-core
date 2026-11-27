@@ -51,6 +51,17 @@ export interface AssetHandler {
 	fetch(request: Request): Response | Promise<Response>;
 }
 
+/**
+ * Stores receipt images. The bytes live outside the ledger (a bucket, a
+ * directory, or memory); this port only needs to put, get, and drop one object
+ * by an opaque key, so the same app runs on every host.
+ */
+export interface ReceiptStore {
+	put(key: string, body: Uint8Array, contentType: string): Promise<void>;
+	get(key: string): Promise<{ body: Uint8Array; contentType: string } | null>;
+	delete(key: string): Promise<void>;
+}
+
 /** Per-request session store. */
 export interface Session {
 	get<T>(key: string): T | undefined;

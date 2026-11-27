@@ -5,7 +5,7 @@ import { currentUser, ensureCsrfToken, validCsrfToken } from "./auth.js";
 import { userCount } from "./setup.js";
 import type { AppConfig } from "./config.js";
 import { buildHome } from "./home.js";
-import type { AssetHandler, SqlDatabase } from "./ports.js";
+import type { AssetHandler, ReceiptStore, SqlDatabase } from "./ports.js";
 import { renderView } from "./views.js";
 import { sessionMiddleware } from "./session.js";
 import aboutRoutes from "./routes/about.js";
@@ -15,6 +15,7 @@ import expenseRoutes from "./routes/expenses.js";
 import incomeRoutes from "./routes/incomes.js";
 import openingRoutes from "./routes/opening.js";
 import passkeyRoutes from "./routes/passkeys.js";
+import receiptRoutes from "./routes/receipts.js";
 import scanRoutes, { MAX_UPLOAD_BYTES, OVERSIZE_MESSAGE, scanLocals } from "./routes/scan.js";
 import settingsRoutes from "./routes/settings.js";
 import setupRoutes from "./routes/setup.js";
@@ -26,6 +27,11 @@ export interface CuotaAppOptions {
 	config: AppConfig;
 	/** Serves `/static/*`; a binding, a directory, or an in-memory map. */
 	assets: AssetHandler;
+	/**
+	 * Where receipt photos are kept. Optional: without it the app simply cannot
+	 * attach or serve one, and every other page works as normal.
+	 */
+	receipts?: ReceiptStore;
 	/** Mount extra routes before the auth gate, e.g. a health or metadata
 	 * endpoint that must answer without a session. They see the database,
 	 * config, and assets on the context but no session or user, so everything
@@ -38,13 +44,14 @@ export interface CuotaAppOptions {
  * build serves a container, a serverless runtime, or a test with no changes:
  * only the three ports differ between hosts.
  */
-export function createCuotaApp({ database, config, assets, hostRoutes }: CuotaAppOptions): Hono<AppEnv> {
+export function createCuotaApp({ database, config, assets, receipts, hostRoutes }: CuotaAppOptions): Hono<AppEnv> {
 	const app = new Hono<AppEnv>();
 
 	app.use(async (c, next) => {
 		c.set("db", database);
 		c.set("config", config);
 		c.set("assets", assets);
+		c.set("receipts", receipts);
 		await next();
 	});
 
@@ -104,6 +111,17 @@ export function createCuotaApp({ database, config, assets, hostRoutes }: CuotaAp
 		}),
 	);
 
+	// The add form takes the same photo, so it needs the same early cap for the
+	// same reason. The rejected upload lands back on the form with a message,
+	// rather than being buffered and then refused.
+	app.use(
+		"/add",
+		bodyLimit({
+			maxSize: MAX_UPLOAD_BYTES,
+			onError: (c) => c.redirect("/add?photo=too-large", 303),
+		}),
+	);
+
 	app.use(async (c, next) => {
 		if (c.req.method !== "POST") return next();
 		const contentType = c.req.header("content-type") ?? "";
@@ -134,6 +152,12 @@ export function createCuotaApp({ database, config, assets, hostRoutes }: CuotaAp
 				...view,
 				title: "Cuota",
 				authenticated: true,
+				// The add form redirects here when an expense saved but its photo
+				// could not be stored, so the user knows the cost was recorded.
+				receiptWarning:
+					c.req.query("receipt") === "unavailable"
+						? "That expense was saved, but its receipt photo couldn't be stored."
+						: "",
 				csrfToken: c.get("csrfToken"),
 				user: { name: user.name, email: user.email },
 			}),
@@ -147,6 +171,7 @@ export function createCuotaApp({ database, config, assets, hostRoutes }: CuotaAp
 	app.route("/", incomeRoutes);
 	app.route("/", openingRoutes);
 	app.route("/", passkeyRoutes);
+	app.route("/", receiptRoutes);
 	app.route("/", scanRoutes);
 	app.route("/", settingsRoutes);
 	app.route("/", setupRoutes);

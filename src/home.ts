@@ -7,12 +7,15 @@ import { formatHKD, sharesForExpense } from "./calc.js";
 import { listUsers } from "./db.js";
 import { latestSnapshot, listExpenses, listIncomes, openingEvent } from "./ledger.js";
 import type { SqlDatabase } from "./ports.js";
+import { expensesWithReceipts } from "./receipts.js";
 import { currentRatio, listSharingRules, sharingResolver } from "./sharing.js";
 import { todayInHongKong } from "./time.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export interface ExpenseView {
+	/** The expense's id, so its receipt can be linked. */
+	id: number;
 	description: string;
 	/** `llama` for the first user, `mono` for the second. */
 	tone: "llama" | "mono";
@@ -22,6 +25,8 @@ export interface ExpenseView {
 	paid: string;
 	shareLabel: string;
 	share: string;
+	/** True when a receipt photo is stored for this expense. */
+	receipt: boolean;
 }
 
 export interface HomeView {
@@ -115,13 +120,20 @@ export async function buildHome(db: SqlDatabase, viewerId: number): Promise<Home
 	const owedTo = owes ? firstId : secondId;
 	const even = Math.abs(balance) <= 1;
 
-	const recent = allExpenses.slice(0, 10).map<ExpenseView>((e) => {
+	const recentExpenses = allExpenses.slice(0, 10);
+	const withReceipts = await expensesWithReceipts(
+		db,
+		recentExpenses.map((e) => e.id),
+	);
+
+	const recent = recentExpenses.map<ExpenseView>((e) => {
 		const at = splitAt(e.created_at);
 		const shares = sharesForExpense(e.amount_cents, at.a, lowerId);
 		const viewerIsPayer = e.payer_id === viewerId;
 		const viewerShare = viewerId === firstId ? shares.a : shares.b;
 		const otherShare = viewerId === firstId ? shares.b : shares.a;
 		return {
+			id: e.id,
 			description: e.description,
 			tone: tone(e.payer_id),
 			when: whenLabel(e.date, today),
@@ -129,6 +141,7 @@ export async function buildHome(db: SqlDatabase, viewerId: number): Promise<Home
 			paid: formatHKD(e.amount_cents),
 			shareLabel: viewerIsPayer ? "their share" : "your share",
 			share: formatHKD(viewerIsPayer ? otherShare : viewerShare),
+			receipt: withReceipts.has(e.id),
 		};
 	});
 
