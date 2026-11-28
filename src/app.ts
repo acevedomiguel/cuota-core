@@ -165,12 +165,6 @@ export function createCuotaApp({ database, config, assets, receipts, receiptRete
 				...view,
 				title: "Cuota",
 				authenticated: true,
-				// The add form redirects here when an expense saved but its photo
-				// could not be stored, so the user knows the cost was recorded.
-				receiptWarning:
-					c.req.query("receipt") === "unavailable"
-						? "That expense was saved, but its receipt photo couldn't be stored."
-						: "",
 				csrfToken: c.get("csrfToken"),
 				user: { name: user.name, email: user.email },
 			}),

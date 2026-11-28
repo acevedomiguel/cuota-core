@@ -43,7 +43,6 @@ const LOCALS = [
 	"salaries",
 	"ratio",
 	"recent",
-	"receiptWarning",
 	"setup",
 	"sharing",
 	"snapshotNote",

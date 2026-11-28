@@ -177,11 +177,13 @@ TEST_DATABASE_URL=postgres://cuota:cuota@localhost:55432/cuota_test npm test
   it. Inserts that need the new id end in `RETURNING id`.
 - `AssetHandler` — `fetch(request)` serving `/static/*`.
 - `ReceiptStore` — `put`/`get`/`delete` by opaque key, for receipt photos. It is
-  optional on `createCuotaApp`: a host with no bucket or directory can omit it,
-  and the add form simply hides the photo field. `receiptRetentionDays` on
-  `createCuotaApp` sets how long a photo stays linked: past that window the home
-  list stops offering it and the row is swept on the next view, while the store's
-  own rule (a bucket lifecycle, say) expires the bytes.
+  optional on `createCuotaApp`: a host with no bucket or directory can omit it.
+  Nothing writes one any more — the add form takes no photo and scanning reads
+  without storing — so this is only read for rows recorded before that changed.
+  `receiptRetentionDays` on `createCuotaApp` sets how long a photo stays linked:
+  past that window the home list stops offering it and the row is swept on the
+  next view, while the store's own rule (a bucket lifecycle, say) expires the
+  bytes. The storage is retired in MIL-185.
 - `AppConfig` — allowlist, passkey relying party, optional invoice reading,
   version, and the optional about-page contact block.
 

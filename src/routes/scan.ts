@@ -30,7 +30,8 @@ export function scanLocals(csrfToken: string, error = "") {
 	return {
 		title: "Scan an invoice",
 		authenticated: true,
-		active: "scan",
+		// Scanning is a step inside Add, so the Add entry stays highlighted.
+		active: "add",
 		csrfToken,
 		error,
 		maxMb: MAX_MB,
