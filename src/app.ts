@@ -120,17 +120,6 @@ export function createCuotaApp({ database, config, assets, receipts, receiptRete
 		}),
 	);
 
-	// The add form takes the same photo, so it needs the same early cap for the
-	// same reason. The rejected upload lands back on the form with a message,
-	// rather than being buffered and then refused.
-	app.use(
-		"/add",
-		bodyLimit({
-			maxSize: MAX_UPLOAD_BYTES,
-			onError: (c) => c.redirect("/add?photo=too-large", 303),
-		}),
-	);
-
 	app.use(async (c, next) => {
 		if (c.req.method !== "POST") return next();
 		const contentType = c.req.header("content-type") ?? "";

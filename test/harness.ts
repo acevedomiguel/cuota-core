@@ -37,11 +37,13 @@ export const testConfig: AppConfig = {
 	},
 };
 
+export const receiptStore = memoryReceipts();
+
 export const app = createCuotaApp({
 	database,
 	config: testConfig,
 	assets: fileAssets(new URL("../public", import.meta.url).pathname),
-	receipts: memoryReceipts(),
+	receipts: receiptStore,
 });
 
 /** The database, under the name the ported tests already use. */

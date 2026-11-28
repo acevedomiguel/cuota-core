@@ -105,7 +105,7 @@ app.post("/scan", async (c) => {
 
 	const form = await formLocals(c.get("db"), user.id);
 	const values = prefillValues(result.reading, form.today);
-	return c.html(renderView("add", viewLocals(form, c.get("csrfToken"), values, {}, prefillNotice(result.reading), Boolean(c.get("receipts")))));
+	return c.html(renderView("add", viewLocals(form, c.get("csrfToken"), values, {}, prefillNotice(result.reading))));
 });
 
 export default app;
